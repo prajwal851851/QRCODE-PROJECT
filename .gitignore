@@ -1,0 +1,13 @@
+node_modules/
+.next/
+*.log
+*.tsbuildinfo
+.env*
+dist/
+build/
+.DS_Store
+*.psd
+*.sqlite3
+*.pyc
+__pycache__/
+media/ 
