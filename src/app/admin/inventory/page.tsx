@@ -168,7 +168,7 @@ export default function InventoryPage() {
       ID: item.id,
       Name: item.name,
       Code: item.code,
-      Category: item.category?.name || 'N/A',
+      Category: categories.find(cat => cat.id === item.category)?.name || 'N/A',
       Supplier: item.supplier?.name || 'N/A',
       'Current Stock': item.current_stock,
       Unit: item.unit,
