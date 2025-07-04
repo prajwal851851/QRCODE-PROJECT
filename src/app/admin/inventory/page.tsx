@@ -168,8 +168,8 @@ export default function InventoryPage() {
       ID: item.id,
       Name: item.name,
       Code: item.code,
-      Category: categories.find(cat => cat.id === item.category)?.name || 'N/A',
-      Supplier: item.supplier?.name || 'N/A',
+      Category: categories.find(cat => cat.id === (typeof item.category === 'object' ? item.category.id : item.category))?.name || 'N/A',
+      Supplier: typeof item.supplier === 'object' && item.supplier !== null ? item.supplier.name : 'N/A',
       'Current Stock': item.current_stock,
       Unit: item.unit,
       'Purchase Price': item.purchase_price,
@@ -206,7 +206,12 @@ export default function InventoryPage() {
   // Calculate value by category for the table
   const valueByCategory = items.reduce((acc, item) => {
     // Support both object and id for item.category
-    const categoryId = item.category?.id || item.category || "uncategorized";
+    let categoryId: string | number = "uncategorized";
+    if (typeof item.category === "object" && item.category !== null && "id" in item.category) {
+      categoryId = item.category.id;
+    } else if (item.category !== undefined && item.category !== null) {
+      categoryId = item.category;
+    }
     if (!acc[categoryId]) {
       acc[categoryId] = { count: 0, value: 0 };
     }
