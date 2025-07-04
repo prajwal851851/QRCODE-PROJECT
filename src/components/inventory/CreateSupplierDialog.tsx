@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { X, User, Mail, Phone, MapPin, FileText } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { getApiUrl } from '@/lib/api-service';
 
 const supplierSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
