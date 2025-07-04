@@ -44,18 +44,7 @@ const nextConfig = {
       'png.pngtree.com',
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*/',
-        destination: 'http://127.0.0.1:8000/api/:path*/', // Proxy to Backend with trailing slash
-      },
-      {
-        source: '/api/:path*',
-        destination: 'http://127.0.0.1:8000/api/:path*/', // Ensure trailing slash for Django
-      },
-    ]
-  },
+  // For Netlify: Do not use rewrites for API proxying. Use NEXT_PUBLIC_API_URL in your code for all backend API calls.
 }
 
 module.exports = nextConfig
