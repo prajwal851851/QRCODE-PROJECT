@@ -55,7 +55,7 @@ export default function CustomerMenuPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
-  const tableName = searchParams.get("tableId") || searchParams.get("tableUid")
+  const tableName = searchParams?.get("tableId") ?? searchParams?.get("tableUid") ?? ''
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [addedItemInfo, setAddedItemInfo] = useState<{ id: number; message: string } | null>(null);
   const [selectedDiningOption, setSelectedDiningOption] = useState("dine-in");
@@ -89,8 +89,8 @@ export default function CustomerMenuPage() {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    const tableIdParam = searchParams.get("tableId")
-    const tableUidParam = searchParams.get("tableUid")
+    const tableIdParam = searchParams && searchParams.get("tableId") || ''
+    const tableUidParam = searchParams && searchParams.get("tableUid") || ''
     console.log('useEffect triggered. tableIdParam:', tableIdParam, 'tableUidParam:', tableUidParam); // DEBUG LOG
     if (tableIdParam) {
       setTableId(Number.parseInt(tableIdParam))
@@ -122,8 +122,8 @@ export default function CustomerMenuPage() {
       setFetchError(null)
 
       // Get tableUid or tableId from URL
-      const tableUid = searchParams.get("tableUid")
-      const tableId = searchParams.get("tableId")
+      const tableUid = searchParams && searchParams.get("tableUid") || ''
+      const tableId = searchParams && searchParams.get("tableId") || ''
       console.log("Table UID from URL:", tableUid);
       console.log("Table ID from URL:", tableId);
       let url = `${getApiUrl()}/api/menu/customer/`
@@ -143,13 +143,13 @@ export default function CustomerMenuPage() {
       
       // Extract restaurant user ID if available in the response
       if (data.restaurant_user_id) {
-        setRestaurantUserId(Number(data.restaurant_user_id))
+        setRestaurantUserId(String(data.restaurant_user_id))
         console.log('Restaurant User ID set to:', data.restaurant_user_id)
       } else {
         console.warn('No restaurant_user_id found in API response:', data)
         // Set a default restaurant user ID for testing/debugging
         // Based on our database query, user ID 14 has the extra charges
-        setRestaurantUserId(14)
+        setRestaurantUserId('14')
         console.log('Setting default Restaurant User ID to: 14')
       }
       
@@ -372,7 +372,7 @@ export default function CustomerMenuPage() {
       return items.filter((item) => {
         const matchesCategory =
           selectedCategories.length === 0 ||
-          selectedCategories.includes(item.category);
+          item.category !== null && selectedCategories.includes(Number(item.category));
         const matchesSearch =
           searchTerm === "" ||
           item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -429,11 +429,7 @@ export default function CustomerMenuPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!tableId) {
-      toast({
-        title: "Error",
-        description: "No table ID provided",
-        variant: "destructive",
-      })
+      toast("No table ID provided.")
       return
     }
 
@@ -578,7 +574,7 @@ export default function CustomerMenuPage() {
             <Button
               variant="outline"
               className="mt-4 w-full border-primary text-primary hover:bg-primary/10"
-              onClick={loadMenuData}
+              onClick={() => loadMenuData()}
             >
               Retry
             </Button>
@@ -919,6 +915,7 @@ export default function CustomerMenuPage() {
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
         cartItems={cartItems}
+        setCartItems={(items: any) => setCartItems(items as (MenuItem & { quantity: number })[])}
         tableName={tableName}
         onOrderPlaced={() => {
           setCartItems([])

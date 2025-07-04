@@ -33,6 +33,7 @@ import { fetchWithAuth } from '@/lib/api-service'
 import styles from './orders.module.css'
 import { ToastAction } from "@/components/ui/toast"
 import { useLoading } from '@/contexts/LoadingContext'
+import { getApiUrl } from '@/lib/api-service'
 
 type OrderItem = {
   menuItemId: string;
@@ -111,7 +112,7 @@ export default function OrdersPage() {
     // Poll waiter calls
     const fetchWaiterCalls = async () => {
       try {
-        const res = await fetchWithAuth("http://localhost:8000/api/waiter_call/active/")
+        const res = await fetchWithAuth(`${getApiUrl()}/api/waiter_call/active/`)
         if (!res.ok) return
         const data = await res.json()
         setWaiterCalls(data)
@@ -136,7 +137,7 @@ export default function OrdersPage() {
     setIsRefreshing(true)
     try {
       console.log('[Admin Orders] Fetching orders...')
-      const response = await fetchWithAuth('http://localhost:8000/api/orders/')
+      const response = await fetchWithAuth(`${getApiUrl()}/api/orders/`)
       if (!response.ok) throw new Error('Failed to fetch orders')
       const data = await response.json()
       console.log('[Admin Orders] Raw orders data:', data)
@@ -172,7 +173,7 @@ export default function OrdersPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetchWithAuth('http://localhost:8000/api/orders/dashboard_stats/')
+      const response = await fetchWithAuth(`${getApiUrl()}/api/orders/dashboard_stats/`)
       if (!response.ok) throw new Error('Failed to fetch stats')
       const data = await response.json()
       setStats(data)
@@ -192,7 +193,7 @@ export default function OrdersPage() {
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
-      const response = await fetchWithAuth(`http://localhost:8000/api/orders/${orderId}/update_status/`, {
+      const response = await fetchWithAuth(`${getApiUrl()}/api/orders/${orderId}/update_status/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -219,7 +220,7 @@ export default function OrdersPage() {
 
   const handleCancelOrder = async (orderId: string) => {
     try {
-      const response = await fetchWithAuth(`http://localhost:8000/api/orders/${orderId}/update_status/`, {
+      const response = await fetchWithAuth(`${getApiUrl()}/api/orders/${orderId}/update_status/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +247,7 @@ export default function OrdersPage() {
 
   const handleUpdatePayment = async (orderId: string, paymentStatus: "pending" | "paid", paymentMethod?: "cash" | "card" | "esewa" | "khalti" | "fonepay") => {
     try {
-      const response = await fetchWithAuth(`http://localhost:8000/api/orders/${orderId}/update_payment/`, {
+      const response = await fetchWithAuth(`${getApiUrl()}/api/orders/${orderId}/update_payment/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -293,7 +294,7 @@ export default function OrdersPage() {
             onClick={async () => {
               dismissConfirm()
               try {
-                const response = await fetchWithAuth(`http://localhost:8000/api/orders/${order.id}/`, {
+                const response = await fetchWithAuth(`${getApiUrl()}/api/orders/${order.id}/`, {
                   method: 'DELETE',
                 })
                 if (!response.ok) throw new Error('Failed to delete order')
@@ -308,7 +309,7 @@ export default function OrdersPage() {
                   action: (
                     <ToastAction altText="Undo" onClick={async () => {
                       try {
-                        const response = await fetchWithAuth("http://localhost:8000/api/orders/", {
+                        const response = await fetchWithAuth(`${getApiUrl()}/api/orders/`, {
                           method: "POST",
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify(order),
@@ -365,7 +366,7 @@ export default function OrdersPage() {
   const handleDeleteAllOrders = async () => {
     if (!window.confirm("Are you sure you want to delete ALL orders? This cannot be undone.")) return;
     try {
-      const response = await fetchWithAuth('http://localhost:8000/api/orders/delete_all/', {
+      const response = await fetchWithAuth(`${getApiUrl()}/api/orders/delete_all/`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -380,7 +381,7 @@ export default function OrdersPage() {
 
   const resolveWaiterCall = async (id: number) => {
     try {
-      const res = await fetchWithAuth(`http://localhost:8000/api/waiter_call/${id}/resolve/`, { method: 'POST' })
+      const res = await fetchWithAuth(`${getApiUrl()}/api/waiter_call/${id}/resolve/`, { method: 'POST' })
       if (res.ok) {
         setWaiterCalls((prev) => prev.filter((c) => c.id !== id))
       }

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { getApiUrl } from '@/lib/api-service';
 
 interface Category {
   id: number
@@ -27,7 +28,7 @@ export default function InventoryCategoriesPage() {
     setError(null)
     try {
       const token = localStorage.getItem("adminAccessToken")
-      const res = await fetch("http://127.0.0.1:8000/api/inventory/categories/", {
+      const res = await fetch(`${getApiUrl()}/inventory/categories/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) throw new Error("Failed to fetch categories")
@@ -68,8 +69,8 @@ export default function InventoryCategoriesPage() {
     try {
       const res = await fetch(
         editingCategory
-          ? `http://127.0.0.1:8000/api/inventory/categories/${editingCategory.id}/`
-          : "http://127.0.0.1:8000/api/inventory/categories/",
+          ? `${getApiUrl()}/inventory/categories/${editingCategory.id}/`
+          : `${getApiUrl()}/inventory/categories/`,
         {
           method: editingCategory ? "PUT" : "POST",
           headers: {
@@ -91,7 +92,7 @@ export default function InventoryCategoriesPage() {
     if (!window.confirm(`Delete category "${cat.name}"?`)) return
     const token = localStorage.getItem("adminAccessToken")
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/inventory/categories/${cat.id}/`, {
+      const res = await fetch(`${getApiUrl()}/inventory/categories/${cat.id}/`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       })

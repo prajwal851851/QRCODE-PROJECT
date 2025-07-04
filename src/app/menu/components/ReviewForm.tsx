@@ -29,7 +29,7 @@ export function ReviewForm({ orderId, onReviewSubmitted }: ReviewFormProps) {
 
     setIsSubmitting(true)
     try {
-      const response = await fetch(getApiUrl("/reviews/create/"), {
+      const response = await fetch(getApiUrl() + "/reviews/create/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

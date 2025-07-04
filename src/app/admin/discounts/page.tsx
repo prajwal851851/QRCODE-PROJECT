@@ -28,6 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { MultiSelect } from "react-multi-select-component"
 import { fetchWithAuth } from '@/lib/api-service'
 import { useLoading } from '@/contexts/LoadingContext'
+import { getApiUrl } from '@/lib/api-service'
 
 export default function DiscountManagementPage() {
   const { setShow } = useLoading();
@@ -58,7 +59,7 @@ export default function DiscountManagementPage() {
   const fetchDiscounts = useCallback(async () => {
     setIsLoading(true)
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/discounts/")
+      const res = await fetchWithAuth(`${getApiUrl()}/discounts/`)
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
       const data: Discount[] = await res.json()
       setDiscounts(data.map(d => ({ ...d, applicable_items: d.applicable_items || [] })));
@@ -73,7 +74,7 @@ export default function DiscountManagementPage() {
 
   const fetchMenuItems = useCallback(async () => {
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/our_menu/")
+      const res = await fetchWithAuth(`${getApiUrl()}/our_menu/`)
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
       const data: MenuItem[] = await res.json()
       setMenuItems(data)
@@ -105,7 +106,7 @@ export default function DiscountManagementPage() {
     ));
 
     try {
-      const res = await fetchWithAuth(`http://localhost:8000/api/discounts/${discountId}/`, {
+      const res = await fetchWithAuth(`${getApiUrl()}/discounts/${discountId}/`, {
         method: "PATCH", // Use PATCH for partial update
         headers: {
           "Content-Type": "application/json",
@@ -151,7 +152,7 @@ export default function DiscountManagementPage() {
     };
     console.log("Sending payload:", payload);
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/discounts/", {
+      const res = await fetchWithAuth(`${getApiUrl()}/discounts/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -222,7 +223,7 @@ export default function DiscountManagementPage() {
 
     try {
         // Use PATCH for partial updates, PUT for full replacement (PATCH is generally safer)
-        const res = await fetchWithAuth(`http://localhost:8000/api/discounts/${currentDiscount.id}/`, {
+        const res = await fetchWithAuth(`${getApiUrl()}/discounts/${currentDiscount.id}/`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -267,7 +268,7 @@ export default function DiscountManagementPage() {
     }
 
     try {
-        const res = await fetchWithAuth(`http://localhost:8000/api/discounts/${currentDiscount.id}/`, {
+        const res = await fetchWithAuth(`${getApiUrl()}/discounts/${currentDiscount.id}/`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",

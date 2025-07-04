@@ -42,6 +42,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useLoading } from '@/contexts/LoadingContext'
 import Select, { components } from 'react-select'
 import type { OptionProps, SingleValueProps } from 'react-select'
+import { getApiUrl } from '@/lib/api-service';
 
 interface MenuItem {
   id: number
@@ -176,7 +177,7 @@ export default function MenuPage() {
 
   const fetchMenu = useCallback(async () => {
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/our_menu/")
+      const res = await fetchWithAuth(`${getApiUrl()}/api/our_menu/`)
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
       const data = await res.json()
       setMenuData({
@@ -217,7 +218,7 @@ export default function MenuPage() {
     const fetchCategories = async () => {
       try {
         setIsCategoriesLoading(true)
-        const response = await fetchWithAuth("http://localhost:8000/api/categories/")
+        const response = await fetchWithAuth(`${getApiUrl()}/api/categories/`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -276,7 +277,7 @@ export default function MenuPage() {
       discount_percentage: newItem.discount_percentage ? Number(newItem.discount_percentage) : null,
     };
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/our_menu/", {
+      const res = await fetchWithAuth(`${getApiUrl()}/api/our_menu/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(itemToAdd),
@@ -349,7 +350,7 @@ export default function MenuPage() {
     }
 
     try {
-      const res = await fetchWithAuth(`http://localhost:8000/api/our_menu/${currentItem.id}/`, {
+      const res = await fetchWithAuth(`${getApiUrl()}/api/our_menu/${currentItem.id}/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -412,7 +413,7 @@ export default function MenuPage() {
             onClick={async () => {
               dismissConfirm()
               try {
-                const res = await fetchWithAuth(`http://localhost:8000/api/our_menu/${item.id}/`, {
+                const res = await fetchWithAuth(`${getApiUrl()}/api/our_menu/${item.id}/`, {
                   method: "DELETE",
                 })
                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
@@ -430,7 +431,7 @@ export default function MenuPage() {
                   action: (
                     <ToastAction altText="Undo" onClick={async () => {
                       try {
-                        const res = await fetchWithAuth("http://localhost:8000/api/our_menu/", {
+                        const res = await fetchWithAuth(`${getApiUrl()}/api/our_menu/`, {
                           method: "POST",
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify(item),
@@ -471,7 +472,7 @@ export default function MenuPage() {
     if (!newCategoryName.trim()) return;
     setIsAddingCategory(true);
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/categories/", {
+      const res = await fetchWithAuth(`${getApiUrl()}/api/categories/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newCategoryName }),
@@ -494,7 +495,7 @@ export default function MenuPage() {
     if (!newCategoryNameEdit.trim()) return;
     setIsAddingCategoryEdit(true);
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/categories/", {
+      const res = await fetchWithAuth(`${getApiUrl()}/api/categories/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newCategoryNameEdit }),
@@ -1210,7 +1211,7 @@ export default function MenuPage() {
               if (!newCategoryName.trim()) return;
               setIsAddingCategory(true);
               try {
-                const res = await fetchWithAuth("http://localhost:8000/api/categories/", {
+                const res = await fetchWithAuth(`${getApiUrl()}/api/categories/`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ name: newCategoryName }),

@@ -80,8 +80,8 @@ export default function TempOrderStatusPage() {
   }, [])
 
   useEffect(() => {
-    const transactionUuid = searchParams.get('transaction_uuid')
-    const orderIdParam = searchParams.get('orderId')
+    const transactionUuid = searchParams?.get('transaction_uuid') ?? ''
+    const orderIdParam = searchParams?.get('orderId') ?? ''
     
     // Handle malformed URLs with double question marks (eSewa issue)
     let actualTransactionUuid = transactionUuid

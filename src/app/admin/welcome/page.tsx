@@ -20,7 +20,7 @@ export default function WelcomePage() {
     setShow(false);
     // Show welcome toast if flag is set
     if (typeof window !== 'undefined' && localStorage.getItem('showWelcomeToast') === 'true') {
-      const name = userData?.first_name || userData?.username || 'User';
+      const name = userData?.first_name || 'User';
       const role = userData?.role || 'admin';
       toast({
         title: 'Login successful',

@@ -35,12 +35,22 @@ export default function CheckoutPage() {
         setCartItems(JSON.parse(storedCart))
       }
       if (storedOrderId) {
-        setOrderId(storedOrderId)
+        setOrderId(storedOrderId as any)
       }
     }
   }, [])
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  // Define a type for cart items to fix type errors
+  type CartItem = {
+    price: number
+    quantity: number
+    [key: string]: any
+  }
+
+  // Explicitly type cartItems as CartItem[]
+  const typedCartItems: CartItem[] = cartItems as CartItem[]
+
+  const subtotal = typedCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const serviceFee = subtotal * 0.05
   const total = subtotal + serviceFee
 
@@ -361,7 +371,7 @@ export default function CheckoutPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
+                  {(cartItems as Array<{ id: string | number; quantity: number; name: string; price: number }>).map((item) => (
                     <div key={item.id} className="flex justify-between">
                       <div>
                         <span className="font-medium">{item.quantity}x </span>

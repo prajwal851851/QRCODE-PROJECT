@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { useLoading } from '@/contexts/LoadingContext'
+import { getApiUrl } from '@/lib/api-service';
 
 type Payment = {
   id: string
@@ -94,7 +95,7 @@ export default function PaymentsPage() {
         return;
       }
 
-      const response = await makeAuthenticatedRequest('http://localhost:8000/api/payments/', {
+      const response = await makeAuthenticatedRequest(`${getApiUrl()}/api/payments/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +184,7 @@ export default function PaymentsPage() {
         return null;
       }
 
-      const response = await fetch('http://localhost:8000/authentaction/token/refresh/', {
+      const response = await fetch(`${getApiUrl()}/authentaction/token/refresh/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +194,7 @@ export default function PaymentsPage() {
 
       if (!response.ok) {
         // Try to get new tokens
-        const newTokensResponse = await fetch('http://localhost:8000/authentaction/token/', {
+        const newTokensResponse = await fetch(`${getApiUrl()}/authentaction/token/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -258,7 +259,7 @@ export default function PaymentsPage() {
 
   // Fetch CSRF token on mount to set CSRF cookie
   useEffect(() => {
-    fetch("/api/csrf/", {
+    fetch(`${getApiUrl()}/api/csrf/`, {
       credentials: "include",
     }).then(res => {
       // Extract CSRF token from cookies if available
@@ -276,7 +277,7 @@ export default function PaymentsPage() {
       setIsLoading(true);
       const fetchCharges = async () => {
         try {
-          const res = await makeAuthenticatedRequest('/api/extra-charges/', {
+          const res = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/`, {
             method: 'GET',
             headers: {
               'X-CSRFToken': csrfToken,
@@ -287,7 +288,7 @@ export default function PaymentsPage() {
           if (!res) {
             // If request failed, retry once after a short delay
             await new Promise(resolve => setTimeout(resolve, 1000));
-            const retryRes = await makeAuthenticatedRequest('/api/extra-charges/', {
+            const retryRes = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/`, {
               method: 'GET',
               headers: {
                 'X-CSRFToken': csrfToken,
@@ -560,7 +561,7 @@ export default function PaymentsPage() {
     switch (status) {
       case 'paid':
         return (
-          <Badge variant="success" className="bg-green-500">
+          <Badge variant="default" className="bg-green-500">
             <CheckCircle className="mr-1 h-3 w-3" />
             Paid
           </Badge>
@@ -681,7 +682,7 @@ export default function PaymentsPage() {
     }
 
     try {
-      const res = await makeAuthenticatedRequest('/api/extra-charges/', {
+      const res = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -717,7 +718,7 @@ export default function PaymentsPage() {
     }
 
     try {
-      const res = await makeAuthenticatedRequest(`/api/extra-charges/${charge.id}/`, { 
+      const res = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/${charge.id}/`, { 
         method: 'DELETE',
         headers: {
           'X-CSRFToken': csrfToken,
@@ -743,7 +744,7 @@ export default function PaymentsPage() {
       if (!accessToken) return;
 
       const response = await makeAuthenticatedRequest(
-        `http://localhost:8000/api/payments/${paymentId}/toggle-status/`,
+        `${getApiUrl()}/api/payments/${paymentId}/toggle-status/`,
         {
           method: 'POST',
           headers: {
@@ -772,7 +773,7 @@ export default function PaymentsPage() {
   const handleCancelPayment = async (paymentId: string) => {
     try {
       const response = await makeAuthenticatedRequest(
-        `http://localhost:8000/api/payments/cancel-payment/${paymentId}/`,
+        `${getApiUrl()}/api/payments/cancel-payment/${paymentId}/`,
         { method: 'POST' }
       );
 
@@ -794,11 +795,10 @@ export default function PaymentsPage() {
     }
   };
 
-  const PaymentDetailsDialog = ({ payment, onClose }: { payment: Payment, onClose: () => void }) => {
+  const PaymentDetailsDialog = ({ payment, onClose }: { payment: Payment & { amount: number | string }, onClose: () => void }) => {
     // Format amount to ensure it's a number and has 2 decimal places
-    const formattedAmount = typeof payment.amount === 'string' 
-      ? parseFloat(payment.amount.replace('Rs', '').trim()).toFixed(2)
-      : payment.amount.toFixed(2)
+    const rawAmount = typeof payment.amount === 'string' ? payment.amount.replace(/[^0-9.]/g, '') : payment.amount;
+    const formattedAmount = !isNaN(Number(rawAmount)) ? Number(rawAmount).toFixed(2) : '0.00';
 
     return (
       <Dialog open onOpenChange={onClose}>
@@ -888,7 +888,7 @@ export default function PaymentsPage() {
                 return;
               }
 
-              const response = await makeAuthenticatedRequest(`http://localhost:8000/api/payments/${paymentId}/`, {
+              const response = await makeAuthenticatedRequest(`${getApiUrl()}/api/payments/${paymentId}/`, {
                 method: 'DELETE',
                 headers: {
                   'Content-Type': 'application/json',
@@ -903,7 +903,7 @@ export default function PaymentsPage() {
               console.error('Error deleting payment:', error);
               toast.error("Failed to delete payment. Please try again.");
               // Optionally restore the payment in UI if delete failed
-              setPayments([...payments, paymentsRef.current.find(p => p.id === paymentId)].filter(Boolean))
+              setPayments([...payments, paymentsRef.current.find(p => p.id === paymentId)].filter((p): p is Payment => Boolean(p)))
               paymentsRef.current = payments
             }
           }
@@ -931,7 +931,7 @@ export default function PaymentsPage() {
                 return;
               }
 
-              const response = await makeAuthenticatedRequest('http://localhost:8000/api/payments/delete_all/', {
+              const response = await makeAuthenticatedRequest(`${getApiUrl()}/api/payments/delete_all/`, {
                 method: 'DELETE',
                 headers: {
                   'Content-Type': 'application/json',

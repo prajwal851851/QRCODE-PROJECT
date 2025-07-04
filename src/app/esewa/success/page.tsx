@@ -23,12 +23,12 @@ export default function EsewaSuccessPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            transaction_code: searchParams.get('transaction_code'),
-            status: searchParams.get('status'),
-            total_amount: searchParams.get('total_amount'),
-            transaction_uuid: searchParams.get('transaction_uuid'),
-            product_code: searchParams.get('product_code'),
-            signature: searchParams.get('signature'),
+            transaction_code: searchParams?.get('transaction_code') ?? '',
+            status: searchParams?.get('status') ?? '',
+            total_amount: searchParams?.get('total_amount') ?? '',
+            transaction_uuid: searchParams?.get('transaction_uuid') ?? '',
+            product_code: searchParams?.get('product_code') ?? '',
+            signature: searchParams?.get('signature') ?? '',
           }),
         })
 
@@ -56,10 +56,10 @@ export default function EsewaSuccessPage() {
   const handleViewOrder = () => {
     if (orderId) {
       // Redirect to order status page with orderId (like cash payments)
-      router.push(`/menu/order-status/${orderId}?transaction_uuid=${searchParams.get('transaction_uuid')}`)
+      router.push(`/menu/order-status/${orderId}?transaction_uuid=${searchParams?.get('transaction_uuid') ?? ''}`)
     } else {
       // For temporary orders, redirect to temp order status page
-      router.push(`/menu/order-status/temp?transaction_uuid=${searchParams.get('transaction_uuid')}`)
+      router.push(`/menu/order-status/temp?transaction_uuid=${searchParams?.get('transaction_uuid') ?? ''}`)
     }
   }
 

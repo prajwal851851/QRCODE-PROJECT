@@ -40,7 +40,7 @@ function isValidImageUrl(url: string): boolean {
 
 // Helper to get the API base URL from environment variable
 export function getApiUrl() {
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  return process.env.NEXT_PUBLIC_API_URL || "https://qrcode-project-3.onrender.com";
 }
 
 // Fetch all menu items
@@ -149,7 +149,7 @@ export async function fetchCategories(userId?: number | string): Promise<Categor
   }
 }
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api/';  // Update with your actual API URL
+const API_BASE_URL = `${getApiUrl()}/api/`;
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },

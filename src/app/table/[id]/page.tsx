@@ -42,11 +42,11 @@ export default function TablePage({ params }: TablePageProps) {
     }
   }
 
-  const removeFromCart = (itemId: string) => {
+  const removeFromCart = (itemId: number) => {
     setCartItems(cartItems.filter((item) => item.id !== itemId))
   }
 
-  const updateQuantity = (itemId: string, quantity: number) => {
+  const updateQuantity = (itemId: number, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(itemId)
       return
@@ -84,7 +84,7 @@ export default function TablePage({ params }: TablePageProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
           <div>
-            <DiningOptions />
+            <DiningOptions value={selectedCategory} onChange={setSelectedCategory} />
 
             <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
               <h2 className="text-lg font-semibold mb-3">Today's Specials</h2>
@@ -250,9 +250,11 @@ export default function TablePage({ params }: TablePageProps) {
         updateQuantity={updateQuantity}
         removeFromCart={removeFromCart}
         totalPrice={totalPrice}
+        onCheckout={() => {}}
+        restaurantUserId={undefined}
       />
 
-      <CallServerButton />
+      <CallServerButton tableName={params.id} />
     </div>
   )
 }

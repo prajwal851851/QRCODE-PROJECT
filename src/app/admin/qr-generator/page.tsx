@@ -32,7 +32,7 @@ interface Table {
   public_id: string
 }
 
-const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3003";
+const baseUrl = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_FRONTEND_URL || "https://your-frontend-url.vercel.app";
 
 export default function QRGeneratorPage() {
   const { setShow } = useLoading();
@@ -59,7 +59,7 @@ export default function QRGeneratorPage() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetchWithAuth(getApiUrl("tables/"), {
+      const response = await fetchWithAuth(getApiUrl() + "/api/tables/", {
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
@@ -89,12 +89,13 @@ export default function QRGeneratorPage() {
       if (sortedData.length > 0 && selectedTable === null) {
         setSelectedTable(sortedData[0].id)
       }
-    } catch (error: any) {
-      console.error("Error fetching tables:", error)
-      setError(error.message || "Failed to load tables. Please check the server connection.")
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error fetching tables:", errMsg)
+      setError(errMsg || "Failed to load tables. Please check the server connection.")
       toast({
         title: "Error",
-        description: error.message || "Failed to load tables.",
+        description: errMsg || "Failed to load tables.",
         variant: "destructive",
       })
     } finally {
@@ -115,7 +116,7 @@ export default function QRGeneratorPage() {
       return
     }
     try {
-      const response = await fetchWithAuth(getApiUrl("tables/"), {
+      const response = await fetchWithAuth(getApiUrl() + "/api/tables/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -136,11 +137,12 @@ export default function QRGeneratorPage() {
         title: "Table Added",
         description: `${newTable.name} has been added successfully.`,
       })
-    } catch (error: any) {
-      console.error("Error adding table:", error)
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error adding table:", errMsg)
       toast({
         title: "Error",
-        description: error.message || "Failed to add table.",
+        description: errMsg || "Failed to add table.",
         variant: "destructive",
       })
     }
@@ -150,15 +152,16 @@ export default function QRGeneratorPage() {
     const table = tables.find((t) => t.id === id)
     if (!table) return
     try {
-      const response = await fetchWithAuth(getApiUrl(`tables/${id}/`), {
+      const response = await fetchWithAuth(getApiUrl() + "/api/tables/" + id + "/", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active: !table.active }),
       })
       if (!response.ok) throw new Error("Failed to update table status")
       setTables(tables.map((t) => (t.id === id ? { ...t, active: !t.active } : t)))
-    } catch (error: any) {
-      console.error("Error updating table status:", error)
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error updating table status:", errMsg)
       toast({
         title: "Error",
         description: "Failed to update table status.",
@@ -169,7 +172,7 @@ export default function QRGeneratorPage() {
 
   const deleteTable = async (id: number) => {
     try {
-      const response = await fetchWithAuth(getApiUrl(`tables/${id}/`), {
+      const response = await fetchWithAuth(getApiUrl() + "/api/tables/" + id + "/", {
         method: "DELETE",
       })
       if (!response.ok) throw new Error("Failed to delete table")
@@ -180,11 +183,12 @@ export default function QRGeneratorPage() {
         title: "Table Deleted",
         description: "The table has been removed successfully.",
       })
-    } catch (error: any) {
-      console.error("Error deleting table:", error)
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error deleting table:", errMsg)
       toast({
         title: "Error",
-        description: "Failed to delete table.",
+        description: errMsg || "Failed to delete table.",
         variant: "destructive",
       })
     }
@@ -256,11 +260,12 @@ export default function QRGeneratorPage() {
         title: "QR Codes Downloaded",
         description: `Successfully downloaded ${tablesToDownload.length} QR codes.`,
       })
-    } catch (error: any) {
-      console.error("Error downloading multiple QR codes:", error)
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error downloading multiple QR codes:", errMsg)
       toast({
         title: "Download Failed",
-        description: error.message || "There was an error downloading the QR codes.",
+        description: errMsg || "There was an error downloading the QR codes.",
         variant: "destructive",
       })
     } finally {
@@ -331,11 +336,12 @@ export default function QRGeneratorPage() {
         title: "Printing QR Codes",
         description: "The print dialog should open shortly.",
       })
-    } catch (error: any) {
-      console.error("Error printing multiple QR codes:", error)
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error printing multiple QR codes:", errMsg)
       toast({
         title: "Print Failed",
-        description: error.message || "There was an error printing the QR codes.",
+        description: errMsg || "There was an error printing the QR codes.",
         variant: "destructive",
       })
     }
@@ -432,7 +438,7 @@ export default function QRGeneratorPage() {
                           const folder = zip.folder("qr-codes")
                           const total = filteredTables.length
                           let completed = 0
-                          const fetchQRCode = async (table) => {
+                          const fetchQRCode = async (table: Table) => {
                             const qrUrl = `${baseUrl}/menu?tableUid=${table.public_id}`
                             const qrResponse = await fetch(
                               `https://api.qrserver.com/v1/create-qr-code/?size=${qrCodeSize}x${qrCodeSize}&data=${encodeURIComponent(qrUrl)}&margin=10`
@@ -460,9 +466,10 @@ export default function QRGeneratorPage() {
                             description: `Successfully downloaded ${filteredTables.length} QR codes.`,
                           })
                         } catch (error) {
+                          const errMsg = error instanceof Error ? error.message : String(error);
                           toast({
                             title: "Download Failed",
-                            description: error.message || "There was an error downloading the QR codes.",
+                            description: errMsg || "There was an error downloading the QR codes.",
                             variant: "destructive",
                           })
                         } finally {

@@ -57,7 +57,7 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
         const token = localStorage.getItem('adminAccessToken');
         if (!token) return;
 
-        const response = await fetch(`${API_BASE_URL}alerts/?is_read=false`, {
+        const response = await fetch(`${getApiUrl()}alerts/?is_read=false`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -97,7 +97,7 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
         const token = localStorage.getItem('adminAccessToken');
         if (!token) return;
 
-        const response = await fetch(`${API_BASE_URL}alerts/${id}/`, {
+        const response = await fetch(`${getApiUrl()}alerts/${id}/`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -121,7 +121,7 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
 
         // This is a simplification. A real implementation would have a dedicated backend endpoint.
         const readPromises = notifications.map(n => 
-             fetch(`${API_BASE_URL}alerts/${n.id}/`, {
+             fetch(`${getApiUrl()}alerts/${n.id}/`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_read: true })
