@@ -204,7 +204,7 @@ export function PaymentNotificationSystem() {
           setOrderNotifications(data.recent_orders.map((o: any) => ({
             id: o.id,
             table_name: o.table_name,
-            total: o.total,
+            total: o.total as string | number,
             status: o.status,
             created_at: o.created_at || o.createdAt,
           })));
@@ -394,15 +394,16 @@ export function PaymentNotificationSystem() {
                         {getStatusIcon(order.status)}
                         <p className="font-medium text-sm">
                           Table {order.table_name} - Rs {(() => {
-                            let total = order.total;
-                            if (typeof total === 'string') {
-                              total = total.replace(/[^\d.]/g, '');
-                            }
-                            if (typeof total !== 'number' && typeof total !== 'string') {
+                            const totalRaw = order.total;
+                            if (typeof totalRaw === 'string') {
+                              const cleaned = (totalRaw as string).replace(/[^\d.]/g, '');
+                              const num = Number(cleaned);
+                              return isNaN(num) ? '0.00' : num.toFixed(2);
+                            } else if (typeof totalRaw === 'number') {
+                              return totalRaw.toFixed(2);
+                            } else {
                               return '0.00';
                             }
-                            const num = Number(total);
-                            return isNaN(num) ? '0.00' : num.toFixed(2);
                           })()}
                         </p>
                       </div>
