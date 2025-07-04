@@ -9,7 +9,7 @@ import { SessionTimeoutWarning } from '@/components/session-timeout-warning'
 import { useSessionTimeout } from '@/hooks/use-session-timeout'
 import { ResponsiveAdminSidebar } from '@/components/responsive-admin-sidebar'
 import { ThemeProviderCustom } from '@/components/theme-provider-custom'
-import { fetchWithAuth, logout } from '@/lib/api-service'
+import { fetchWithAuth, logout, getApiUrl } from '@/lib/api-service'
 import { Sun, Moon, User, LogOut, Settings, KeyRound } from 'lucide-react'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import { useLoading } from '@/contexts/LoadingContext'
@@ -81,7 +81,7 @@ export default function AdminLayout({
       setChangePwError('New passwords do not match.')
       return
     }
-    const res = await fetchWithAuth('http://localhost:8000/authentaction/change-password/', {
+    const res = await fetchWithAuth(getApiUrl() + 'authentaction/change-password/', {
       method: 'POST',
       body: JSON.stringify({
         current_password: pwForm.current,

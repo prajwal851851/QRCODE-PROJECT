@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProviderCustom } from "@/components/theme-provider-custom"
 import { useLoading } from '@/contexts/LoadingContext'
-import { getApiUrl } from "@/lib/api"
+import { getApiUrl } from "@/lib/api-service"
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("")

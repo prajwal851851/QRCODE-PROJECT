@@ -209,7 +209,7 @@ export default function MenuPage() {
 
   // Fetch CSRF token on mount to set CSRF cookie
   useEffect(() => {
-    fetch("http://localhost:8000/api/csrf/", {
+    fetch(getApiUrl() + "/api/csrf/", {
       credentials: "include",
     }).catch((err) => console.error("Failed to fetch CSRF token:", err))
   }, [])

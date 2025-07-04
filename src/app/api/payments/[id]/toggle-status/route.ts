@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getApiUrl } from '@/lib/api-service';
 
 export async function POST(
   request: Request,
@@ -6,7 +7,7 @@ export async function POST(
 ) {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/payments/${params.id}/toggle-status/`,
+      `${getApiUrl()}/api/payments/${params.id}/toggle-status/`,
       {
         method: 'POST',
         headers: {

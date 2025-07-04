@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useLoading } from '@/contexts/LoadingContext'
 import { CreateSupplierDialog } from "@/components/inventory/CreateSupplierDialog"
 import { getInventoryCategories } from '@/lib/api-service'
+import { getApiUrl } from '@/lib/api-service'
 
 export default function InventoryPage() {
   const { setShow } = useLoading();
@@ -42,7 +43,7 @@ export default function InventoryPage() {
 
   const [categories, setCategories] = useState<InventoryCategory[]>([])
 
-  const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/inventory/`;
+  const API_BASE_URL = `${getApiUrl()}/api/inventory/`;
 
   const handleMarkAsRead = async (alertId: string | number) => {
     try {

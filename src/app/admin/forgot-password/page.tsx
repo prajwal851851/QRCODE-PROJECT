@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useLoading } from '@/contexts/LoadingContext'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import { getApiUrl } from "@/lib/api"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -40,7 +41,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
     setShow(true)
     try {
-      const response = await fetch("http://localhost:8000/authentaction/forgot-password/", {
+      const response = await fetch(getApiUrl() + "authentaction/forgot-password/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -77,7 +78,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
     setShow(true)
     try {
-      const response = await fetch("http://localhost:8000/authentaction/reset-password/", {
+      const response = await fetch(getApiUrl() + "authentaction/reset-password/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp, new_password: newPassword }),

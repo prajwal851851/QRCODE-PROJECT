@@ -12,6 +12,7 @@ import { UtensilsCrossed, CreditCard, Wallet, ArrowLeft, Check } from "lucide-re
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
+import { getApiUrl } from '@/lib/api-service';
 
 export default function CheckoutContent() {
   const [paymentMethod, setPaymentMethod] = useState("card")
@@ -75,7 +76,7 @@ export default function CheckoutContent() {
       if (!orderId) {
         throw new Error("Order ID not found.")
       }
-      const response = await fetch('/api/esewa/initiate/', {
+      const response = await fetch(getApiUrl() + '/api/payments/esewa/initiate/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
