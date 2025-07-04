@@ -394,7 +394,7 @@ export function PaymentNotificationSystem() {
                         {getStatusIcon(order.status)}
                         <p className="font-medium text-sm">
                           Table {order.table_name} - Rs {(() => {
-                            let total: string | number = order.total;
+                            let total = order.total;
                             if (typeof total === 'string') {
                               total = total.replace(/[^\d.]/g, '');
                             }
