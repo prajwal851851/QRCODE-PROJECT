@@ -3,7 +3,7 @@ import json
 
 def test_login():
     # Login endpoint
-    login_url = "http://localhost:8000/api/user_role/login/"
+    login_url = "https://qrcode-project-3.onrender.com/api/user_role/login/"
     
     # Login data
     login_data = {
@@ -27,7 +27,7 @@ def test_login():
         }
         
         print("\nTesting protected endpoint...")
-        users_response = requests.get("http://localhost:8000/api/user_role/users/", headers=headers)
+        users_response = requests.get("https://qrcode-project-3.onrender.com/api/user_role/users/", headers=headers)
         print("\nStatus Code:", users_response.status_code)
         print("Response:", users_response.text)
     else:

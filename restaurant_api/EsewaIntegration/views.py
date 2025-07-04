@@ -155,7 +155,8 @@ def initiate_payment(request):
         product_code = 'EPAYTEST'  # Test environment product code
         secret_key = '8gBm/:&EnhH.1/q'  # Test environment secret key
         payment_url = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'  # Test environment URL
-        frontend_base_url = 'http://localhost:3003'  # Updated frontend URL with correct port
+        import os
+        frontend_base_url = os.environ.get('FRONTEND_BASE_URL', 'https://your-frontend-url.vercel.app')
 
         print('[eSewa INITIATE] Configuration:', {
             'product_code': product_code,
@@ -448,7 +449,8 @@ def cancel_payment(request):
                 print(f'[eSewa CANCEL] Transaction {transaction_uuid} not found')
         
         # Redirect to menu page
-        frontend_base_url = 'http://localhost:3003'
+        import os
+        frontend_base_url = os.environ.get('FRONTEND_BASE_URL', 'https://your-frontend-url.vercel.app')
         if order_id:
             # Try to get table info from order
             try:

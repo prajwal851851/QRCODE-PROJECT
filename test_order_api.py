@@ -20,7 +20,7 @@ test_data = {
 # Test the API
 try:
     response = requests.post(
-        "http://localhost:8000/api/orders/",
+        "https://qrcode-project-3.onrender.com/api/orders/",
         headers={"Content-Type": "application/json"},
         data=json.dumps(test_data)
     )
