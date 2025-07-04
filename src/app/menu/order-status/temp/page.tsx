@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { OrderStatus } from "../../components/OrderStatus"
 import WaiterCallNotificationBar from "../WaiterCallNotificationBar"
 import { useToast } from "@/hooks/use-toast"
-import { createOrderWithCheck } from '@/lib/api-service'
+import { createOrderWithCheck, getApiUrl } from '@/lib/api-service'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, AlertCircle } from "lucide-react"
@@ -40,7 +40,7 @@ export default function TempOrderStatusPage() {
       setIsRefreshing(isManualRefresh)
       setFetchError(null)
 
-      const response = await fetch(`/api/orders/${orderId}`)
+      const response = await fetch(`${getApiUrl()}/api/orders/${orderId}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -113,7 +113,7 @@ export default function TempOrderStatusPage() {
       const handleOrderProcess = async () => {
         try {
           // 1. First check if an order already exists for this transaction_uuid
-          const checkRes = await fetch(`http://localhost:8000/api/orders/?transaction_uuid=${actualTransactionUuid}`)
+          const checkRes = await fetch(`${getApiUrl()}/api/orders/?transaction_uuid=${actualTransactionUuid}`)
           if (checkRes.ok) {
             const checkData = await checkRes.json()
             if (Array.isArray(checkData) && checkData.length > 0) {
@@ -133,7 +133,7 @@ export default function TempOrderStatusPage() {
             // Get table ID
             let tableId = Number(orderDetails.tableName)
             if (isNaN(tableId)) {
-              const res = await fetch(`http://localhost:8000/api/tables/?public_id=${orderDetails.tableName}`)
+              const res = await fetch(`${getApiUrl()}/api/tables/?public_id=${orderDetails.tableName}`)
               if (!res.ok) throw new Error('Failed to fetch table info')
               const tables = await res.json()
               if (!tables.length) throw new Error('Table not found')
@@ -161,7 +161,7 @@ export default function TempOrderStatusPage() {
             
             // Link the eSewa transaction to the newly created order
             try {
-              await fetch('http://localhost:8000/api/payments/esewa/link/', {
+              await fetch(`${getApiUrl()}/api/payments/esewa/link/`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -189,7 +189,7 @@ export default function TempOrderStatusPage() {
               console.log('Attempting to recreate order from transaction:', actualTransactionUuid)
               console.log('Transaction UUID being sent to API:', actualTransactionUuid)
               
-              const recreateRes = await fetch('http://localhost:8000/api/payments/esewa/recreate-order/', {
+              const recreateRes = await fetch(`${getApiUrl()}/api/payments/esewa/recreate-order/`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

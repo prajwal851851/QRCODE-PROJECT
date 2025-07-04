@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { ShoppingCart, X } from "lucide-react"
 import { MenuItem } from "@/lib/types"
 import { useEffect, useState } from "react"
+import { getApiUrl } from '../lib/api-service';
 
 interface CartItem {
   id: number
@@ -52,7 +53,7 @@ export function CartSidebar({
       
       // Use the correct API endpoint with the restaurant user ID
       // This endpoint has been tested and confirmed to work correctly
-      const url = `http://localhost:8000/api/extra-charges/by-user/${restaurantUserId}/`;
+      const url = `${getApiUrl()}/api/extra-charges/by-user/${restaurantUserId}/`;
       console.log(`Fetching extra charges for restaurant ID ${restaurantUserId} from: ${url}`);
       
       fetch(url, {

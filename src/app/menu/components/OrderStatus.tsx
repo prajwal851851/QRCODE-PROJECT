@@ -9,7 +9,7 @@ import { Star, Clock, CheckCircle, X, RefreshCw, AlertCircle } from "lucide-reac
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter, useSearchParams } from "next/navigation"
-import { createOrderWithCheck } from '@/lib/api-service'
+import { createOrderWithCheck, getApiUrl } from '@/lib/api-service'
 
 type OrderStatus = "pending" | "in-progress" | "completed" | "cancelled"
 
@@ -47,7 +47,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
   // Check if review exists for this order
   const checkExistingReview = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/reviews/?order=${orderId}`)
+      const response = await fetch(`${getApiUrl()}/api/reviews/?order=${orderId}`)
       if (response.ok) {
         const reviews = await response.json()
         if (reviews.length > 0) {
@@ -86,7 +86,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
       setIsRefreshing(isManualRefresh)
       setFetchError(null)
 
-      const response = await fetch(`/api/orders/${orderId}`)
+      const response = await fetch(`${getApiUrl()}/api/orders/${orderId}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -130,7 +130,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
       // Link the eSewa transaction to the newly created order
       if (transactionUuid && data.id) {
         try {
-          await fetch('http://localhost:8000/api/payments/esewa/link/', {
+          await fetch(`${getApiUrl()}/api/payments/esewa/link/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
         // Skip eSewa verification for cash payments, just fetch the order
                 fetchOrder();
           } else {
-      fetch(`http://localhost:8000/api/payments/esewa/verify/?transaction_uuid=${transactionUuid}`)
+      fetch(`${getApiUrl()}/api/payments/esewa/verify/?transaction_uuid=${transactionUuid}`)
           .then(res => res.json())
           .then(async data => {
             if (data.status === 'success') {
@@ -221,7 +221,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
 
     setIsSubmitting(true)
     try {
-      const response = await fetch("http://localhost:8000/api/reviews/create/", {
+      const response = await fetch(`${getApiUrl()}/api/reviews/create/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

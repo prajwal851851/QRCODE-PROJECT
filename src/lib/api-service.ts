@@ -38,10 +38,15 @@ function isValidImageUrl(url: string): boolean {
   }
 }
 
+// Helper to get the API base URL from environment variable
+export function getApiUrl() {
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+}
+
 // Fetch all menu items
 export async function fetchMenuItems(): Promise<RawMenuItem[]> {
   try {
-    const response = await fetch("http://localhost:8000/api/our_menu/", {
+    const response = await fetch(`${getApiUrl()}/api/our_menu/`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
@@ -80,7 +85,7 @@ export async function fetchMenuItems(): Promise<RawMenuItem[]> {
 // Fetch special menu items
 export async function fetchSpecials(): Promise<RawMenuItem[]> {
   try {
-    const response = await fetch("http://localhost:8000/api/our_menu/", {
+    const response = await fetch(`${getApiUrl()}/api/our_menu/`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
@@ -124,7 +129,7 @@ export async function fetchCategories(userId?: number | string): Promise<Categor
     throw new Error('User ID is required to fetch categories.');
   }
   try {
-    const response = await fetch(`http://localhost:8000/api/categories/public/?user_id=${userId}`, {
+    const response = await fetch(`${getApiUrl()}/api/categories/public/?user_id=${userId}`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
@@ -262,7 +267,7 @@ export const redirectToCustomerMenu = (tableId: string) => {
 // Fetch categorized menu items
 export async function fetchCategorizedMenuItems(): Promise<CategorizedMenuData> {
   try {
-    const response = await fetch("http://localhost:8000/api/menu/categorized/", {
+    const response = await fetch(`${getApiUrl()}/api/menu/categorized/`, {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
@@ -335,7 +340,7 @@ export async function refreshToken() {
   }
 
   try {
-    const response = await fetch('http://localhost:8000/authentaction/token/refresh/', {
+    const response = await fetch(`${getApiUrl()}/authentaction/token/refresh/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh }),

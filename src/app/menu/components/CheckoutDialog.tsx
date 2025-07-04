@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card } from "@/components/ui/card"
 import { AnimatePresence, motion } from "framer-motion"
-import { createOrderWithCheck } from "@/lib/api-service"
+import { createOrderWithCheck, getApiUrl } from "@/lib/api-service"
 
 type CartItem = {
   id: number
@@ -95,7 +95,7 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const response = await fetch('http://localhost:8000/api/payments/esewa/initiate/', {
+      const response = await fetch(`${getApiUrl()}/api/payments/esewa/initiate/`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -175,7 +175,7 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
         // Cash payment: create order immediately and redirect
       let tableId = Number(tableName)
       if (isNaN(tableId)) {
-        const res = await fetch(`http://localhost:8000/api/tables/?public_id=${tableName}`)
+        const res = await fetch(`${getApiUrl()}/api/tables/?public_id=${tableName}`)
         if (!res.ok) throw new Error('Failed to fetch table info')
         const tables = await res.json()
         if (!tables.length) throw new Error('Table not found')

@@ -26,7 +26,7 @@ import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 import { useSearchParams, useRouter } from "next/navigation"
 import { TableIndicator } from "@/components/table-indicator"
-import { fetchSpecials, fetchCategories } from "@/lib/api-service"
+import { fetchSpecials, fetchCategories, getApiUrl } from "@/lib/api-service"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import type { Category, CategorizedMenuData } from "@/lib/types"
 import type { MenuItem } from "@/lib/types" // Ensure MenuItem is only imported once and not declared elsewhere
@@ -97,7 +97,7 @@ export default function CustomerMenuPage() {
       setTableDisplayName(tableIdParam)
     } else if (tableUidParam) {
       // Fetch table details by UID
-      fetch(`http://localhost:8000/api/tables/?public_id=${tableUidParam}`)
+      fetch(`${getApiUrl()}/api/tables/?public_id=${tableUidParam}`)
         .then(res => res.json())
         .then(data => {
           if (data && data.length > 0) {
@@ -126,7 +126,7 @@ export default function CustomerMenuPage() {
       const tableId = searchParams.get("tableId")
       console.log("Table UID from URL:", tableUid);
       console.log("Table ID from URL:", tableId);
-      let url = "http://localhost:8000/api/menu/customer/"
+      let url = `${getApiUrl()}/api/menu/customer/`
       if (tableUid) {
         url += `?tableUid=${tableUid}`
       } else if (tableId) {
@@ -312,7 +312,7 @@ export default function CustomerMenuPage() {
         dining_option: selectedDiningOption,
       }
 
-      const response = await fetch("http://localhost:8000/api/orders/", {
+      const response = await fetch(`${getApiUrl()}/api/orders/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),
@@ -439,7 +439,7 @@ export default function CustomerMenuPage() {
 
     // Check for existing orders before proceeding
     try {
-      const checkResponse = await fetch(`http://localhost:8000/api/orders/check-table/${tableId}/`)
+      const checkResponse = await fetch(`${getApiUrl()}/api/orders/check-table/${tableId}/`)
       if (!checkResponse.ok) throw new Error("Failed to check table status")
       const checkData = await checkResponse.json()
       
@@ -449,7 +449,7 @@ export default function CustomerMenuPage() {
       }
 
       // If no active order, proceed with creating new order
-      const orderResponse = await fetch("http://localhost:8000/api/orders/create/", {
+      const orderResponse = await fetch(`${getApiUrl()}/api/orders/create/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -484,7 +484,7 @@ export default function CustomerMenuPage() {
   useEffect(() => {
     if (restaurantUserId) {
       console.log('Loading extra charges for restaurant user:', restaurantUserId);
-      fetch(`http://localhost:8000/api/extra-charges/by-user/${restaurantUserId}/`)
+      fetch(`${getApiUrl()}/api/extra-charges/by-user/${restaurantUserId}/`)
         .then(res => {
           if (!res.ok) {
             throw new Error('Failed to fetch extra charges');

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Star } from "lucide-react"
+import { getApiUrl } from '../../../lib/api-service';
 
 interface ReviewFormProps {
   orderId: string
@@ -28,7 +29,7 @@ export function ReviewForm({ orderId, onReviewSubmitted }: ReviewFormProps) {
 
     setIsSubmitting(true)
     try {
-      const response = await fetch("http://localhost:8000/api/reviews/create/", {
+      const response = await fetch(getApiUrl("/reviews/create/"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

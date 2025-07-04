@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { AdminHeader } from "@/components/admin-header"
 import { tables } from "@/lib/dummy-data"
-import { fetchWithAuth } from '@/lib/api-service'
+import { fetchWithAuth, getApiUrl } from '@/lib/api-service'
 import styles from '../dashboard/dashboard.module.css'
 import { useLoading } from '@/contexts/LoadingContext'
 
@@ -59,7 +59,7 @@ export default function QRGeneratorPage() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetchWithAuth("http://localhost:8000/api/tables/", {
+      const response = await fetchWithAuth(getApiUrl("tables/"), {
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
@@ -115,7 +115,7 @@ export default function QRGeneratorPage() {
       return
     }
     try {
-      const response = await fetchWithAuth("http://localhost:8000/api/tables/", {
+      const response = await fetchWithAuth(getApiUrl("tables/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -150,7 +150,7 @@ export default function QRGeneratorPage() {
     const table = tables.find((t) => t.id === id)
     if (!table) return
     try {
-      const response = await fetchWithAuth(`http://localhost:8000/api/tables/${id}/`, {
+      const response = await fetchWithAuth(getApiUrl(`tables/${id}/`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active: !table.active }),
@@ -169,7 +169,7 @@ export default function QRGeneratorPage() {
 
   const deleteTable = async (id: number) => {
     try {
-      const response = await fetchWithAuth(`http://localhost:8000/api/tables/${id}/`, {
+      const response = await fetchWithAuth(getApiUrl(`tables/${id}/`), {
         method: "DELETE",
       })
       if (!response.ok) throw new Error("Failed to delete table")

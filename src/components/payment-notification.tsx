@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
+import { getApiUrl } from '../lib/api-service';
 
 interface PaymentNotification {
   id: string
@@ -122,7 +123,7 @@ export function PaymentNotificationSystem() {
     const fetchPayments = async () => {
       try {
         const token = localStorage.getItem("adminAccessToken");
-        const res = await fetch("http://localhost:8000/api/payments/", {
+        const res = await fetch(`${getApiUrl()}/api/payments/`, {
           headers: token ? { "Authorization": `Bearer ${token}` } : {},
           credentials: "include",
         });
@@ -170,7 +171,7 @@ export function PaymentNotificationSystem() {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem("adminAccessToken");
-        const res = await fetch("http://localhost:8000/api/orders/dashboard_full_stats/", {
+        const res = await fetch(`${getApiUrl()}/api/orders/dashboard_full_stats/`, {
           headers: token ? { "Authorization": `Bearer ${token}` } : {},
           credentials: "include",
         });
@@ -215,7 +216,7 @@ export function PaymentNotificationSystem() {
       try {
         console.log("🔄 Fetching waiter calls...");
         const token = localStorage.getItem("adminAccessToken");
-        const res = await fetch("http://localhost:8000/api/waiter_call/active/", {
+        const res = await fetch(`${getApiUrl()}/api/waiter_call/active/`, {
           headers: token ? { "Authorization": `Bearer ${token}` } : {},
           credentials: "include",
         });
@@ -303,7 +304,7 @@ export function PaymentNotificationSystem() {
 
   const resolveWaiterCall = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/waiter_call/${id}/resolve/`, { method: 'POST' })
+      const res = await fetch(`${getApiUrl()}/api/waiter_call/${id}/resolve/`, { method: 'POST' })
       if (res.ok) {
         setWaiterCalls((prev) => prev.filter((c) => c.id !== id))
         toast({ title: 'Waiter call resolved', description: `Table call marked as resolved.` })

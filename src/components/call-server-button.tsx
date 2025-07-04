@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Bell } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { useSearchParams } from "next/navigation"
+import { getApiUrl } from '../lib/api-service';
 
 const COOLDOWN_SECONDS = 120
 
@@ -26,7 +27,7 @@ export function CallServerButton({ tableName }: { tableName: string | null }) {
 
     const checkActiveCalls = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/waiter_call/", {
+        const response = await fetch(getApiUrl() + "/api/waiter_call/", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         })
@@ -136,7 +137,7 @@ export function CallServerButton({ tableName }: { tableName: string | null }) {
     try {
       const body: any = { table_name: tableName }
       if (tableUid) body.table_uid = tableUid
-      const response = await fetch("http://localhost:8000/api/waiter_call/", {
+      const response = await fetch(getApiUrl() + "/api/waiter_call/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

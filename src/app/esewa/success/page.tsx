@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2 } from 'lucide-react'
+import { getApiUrl } from '../../../lib/api-service';
 
 export default function EsewaSuccessPage() {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function EsewaSuccessPage() {
   useEffect(() => {
     const verifyPayment = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/payments/esewa/verify/', {
+        const response = await fetch(`${getApiUrl()}/api/payments/esewa/verify/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

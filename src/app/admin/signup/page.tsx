@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useLoading } from '@/contexts/LoadingContext'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import { getApiUrl } from '../../../lib/api-service';
 
 function validatePassword(password: string) {
   // At least one uppercase, one number, one special char, min 6 chars
@@ -51,7 +52,7 @@ export default function SignupPage() {
     setLoading(true)
     setShow(true)
     try {
-      const response = await fetch("http://localhost:8000/authentaction/signup/", {
+      const response = await fetch(getApiUrl() + "/authentaction/signup/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -86,7 +87,7 @@ export default function SignupPage() {
     setLoading(true)
     setShow(true)
     try {
-      const response = await fetch("http://localhost:8000/authentaction/verify-otp/", {
+      const response = await fetch(getApiUrl() + "/authentaction/verify-otp/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, otp }),

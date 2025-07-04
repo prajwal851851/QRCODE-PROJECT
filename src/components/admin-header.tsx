@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { logout, fetchWithAuth } from '@/lib/api-service'
+import { logout, fetchWithAuth, getApiUrl } from '@/lib/api-service'
 import { useToast } from '@/hooks/use-toast'
 import { PaymentNotificationSystem } from "@/components/payment-notification"
 import type { InventoryAlert } from "@/lib/types"
@@ -166,7 +166,7 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
       setChangePwError('New passwords do not match.');
       return;
     }
-    const res = await fetchWithAuth('http://localhost:8000/authentaction/change-password/', {
+    const res = await fetchWithAuth(getApiUrl('authentaction/change-password/'), {
       method: 'POST',
       body: JSON.stringify({
         current_password: pwForm.current,
