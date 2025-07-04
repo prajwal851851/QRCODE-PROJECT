@@ -16,7 +16,7 @@ export function CallServerButton({ tableName }: { tableName: string | null }) {
   const { toast } = useToast()
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const searchParams = useSearchParams()
-  const tableUid = searchParams.get("tableUid")
+  const tableUid = searchParams?.get("tableUid") ?? ''
 
   // Helper to get the storage key for the current table
   const getStorageKey = () => (tableName ? `waiterCallCooldownEnd_${tableName}` : null)
