@@ -168,8 +168,12 @@ export default function InventoryPage() {
       ID: item.id,
       Name: item.name,
       Code: item.code,
-      Category: categories.find(cat => cat.id === (typeof item.category === 'object' ? item.category.id : item.category))?.name || 'N/A',
-      Supplier: typeof item.supplier === 'object' && item.supplier !== null ? item.supplier.name : 'N/A',
+      Category: item.category && typeof item.category === 'object' && 'name' in item.category
+        ? (item.category as { name: string }).name
+        : categories.find(cat => cat.id === item.category)?.name || 'N/A',
+      Supplier: item.supplier && typeof item.supplier === 'object' && 'name' in item.supplier
+        ? (item.supplier as { name: string }).name
+        : 'N/A',
       'Current Stock': item.current_stock,
       Unit: item.unit,
       'Purchase Price': item.purchase_price,
@@ -207,8 +211,12 @@ export default function InventoryPage() {
   const valueByCategory = items.reduce((acc, item) => {
     // Support both object and id for item.category
     let categoryId: string | number = "uncategorized";
-    if (typeof item.category === "object" && item.category !== null && "id" in item.category) {
-      categoryId = item.category.id;
+    if (
+      typeof item.category === "object" &&
+      item.category !== null &&
+      typeof (item.category as any).id !== "undefined"
+    ) {
+      categoryId = (item.category as { id: string | number }).id;
     } else if (item.category !== undefined && item.category !== null) {
       categoryId = item.category;
     }
@@ -243,7 +251,7 @@ export default function InventoryPage() {
   }
 
   // Handler when supplier is created
-  const handleSupplierCreated = (newSupplier) => {
+  const handleSupplierCreated = (newSupplier: Supplier) => {
     setSuppliers((prev) => [...prev, newSupplier])
     setIsSupplierDialogOpen(false)
   }
@@ -253,7 +261,6 @@ export default function InventoryPage() {
     toast({
       title: "Delete Item?",
       description: "Are you sure you want to delete this item? This action cannot be undone.",
-      icon: <Trash className="h-5 w-5 text-blue-500" />,
       action: (
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200" onClick={() => confirmDeleteItem(id)}>
           <Trash className="h-4 w-4 mr-1" /> Delete
@@ -272,7 +279,6 @@ export default function InventoryPage() {
     toast({
       title: "Delete All Items?",
       description: "Are you sure you want to delete ALL items? This action cannot be undone.",
-      icon: <Trash className="h-5 w-5 text-blue-500" />,
       action: (
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200" onClick={confirmDeleteAllItems}>
           <Trash className="h-4 w-4 mr-1" /> Delete All
@@ -292,7 +298,6 @@ export default function InventoryPage() {
     toast({
       title: "Delete Stock In?",
       description: "Are you sure you want to delete this stock in record? This action cannot be undone.",
-      icon: <Trash className="h-5 w-5 text-blue-500" />,
       action: (
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200" onClick={() => confirmDeleteStockIn(id)}>
           <Trash className="h-4 w-4 mr-1" /> Delete
@@ -311,7 +316,6 @@ export default function InventoryPage() {
     toast({
       title: "Delete All Stock In?",
       description: "Are you sure you want to delete ALL stock in records? This action cannot be undone.",
-      icon: <Trash className="h-5 w-5 text-blue-500" />,
       action: (
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200" onClick={confirmDeleteAllStockIn}>
           <Trash className="h-4 w-4 mr-1" /> Delete All
@@ -331,7 +335,6 @@ export default function InventoryPage() {
     toast({
       title: "Delete Stock Out?",
       description: "Are you sure you want to delete this stock out record? This action cannot be undone.",
-      icon: <Trash className="h-5 w-5 text-blue-500" />,
       action: (
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200" onClick={() => confirmDeleteStockOut(id)}>
           <Trash className="h-4 w-4 mr-1" /> Delete
@@ -350,7 +353,6 @@ export default function InventoryPage() {
     toast({
       title: "Delete All Stock Out?",
       description: "Are you sure you want to delete ALL stock out records? This action cannot be undone.",
-      icon: <Trash className="h-5 w-5 text-blue-500" />,
       action: (
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200" onClick={confirmDeleteAllStockOut}>
           <Trash className="h-4 w-4 mr-1" /> Delete All
@@ -370,7 +372,6 @@ export default function InventoryPage() {
     toast({
       title: "Delete Alert?",
       description: "Are you sure you want to delete this alert? This action cannot be undone.",
-      icon: <Trash className="h-5 w-5 text-blue-500" />,
       action: (
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200" onClick={() => confirmDeleteAlert(id)}>
           <Trash className="h-4 w-4 mr-1" /> Delete
@@ -389,7 +390,6 @@ export default function InventoryPage() {
     toast({
       title: "Delete All Alerts?",
       description: "Are you sure you want to delete ALL alerts? This action cannot be undone.",
-      icon: <Trash className="h-5 w-5 text-blue-500" />,
       action: (
         <Button className="bg-blue-100 text-blue-700 hover:bg-blue-200" onClick={confirmDeleteAllAlerts}>
           <Trash className="h-4 w-4 mr-1" /> Delete All
@@ -414,6 +414,10 @@ export default function InventoryPage() {
       </div>
     )
   }
+
+  // Helper functions for safe property access
+  const safeName = (obj: any) => obj && typeof obj === 'object' && 'name' in obj ? obj.name : 'N/A';
+  const safeUnit = (obj: any) => obj && typeof obj === 'object' && 'unit' in obj ? obj.unit : 'N/A';
 
   return (
     <div className="space-y-6">
@@ -494,6 +498,7 @@ export default function InventoryPage() {
                             onSuccess={handleFormSuccess}
                             suppliers={suppliers}
                             onOpenSupplierDialog={handleOpenSupplierDialog}
+                            onClose={() => setIsItemFormOpen(false)}
                           />
                         </motion.div>
                       )}
@@ -641,10 +646,10 @@ export default function InventoryPage() {
                       {stockIns.slice(0, 5).map(s => (
                         <TableRow key={s.id}>
                           <TableCell>
-                            <div className="font-medium">{s.item.name}</div>
+                            <div className="font-medium">{safeName(s.item)}</div>
                             <div className="text-xs text-muted-foreground">{new Date(s.date).toLocaleDateString()}</div>
                           </TableCell>
-                          <TableCell className="text-right">+{s.quantity} {s.item.unit}</TableCell>
+                          <TableCell className="text-right">+{s.quantity} {safeUnit(s.item)}</TableCell>
                         </TableRow>
                       ))}
                       {stockIns.length === 0 && <TableRow><TableCell colSpan={2} className="text-center">No recent stock in</TableCell></TableRow>}
@@ -670,10 +675,10 @@ export default function InventoryPage() {
                       {stockOuts.slice(0, 5).map(s => (
                         <TableRow key={s.id}>
                           <TableCell>
-                            <div className="font-medium">{s.item.name}</div>
+                            <div className="font-medium">{safeName(s.item)}</div>
                             <div className="text-xs text-muted-foreground">{s.reason}</div>
                           </TableCell>
-                          <TableCell className="text-right">-{s.quantity} {s.item.unit}</TableCell>
+                          <TableCell className="text-right">-{s.quantity} {safeUnit(s.item)}</TableCell>
                         </TableRow>
                       ))}
                       {stockOuts.length === 0 && <TableRow><TableCell colSpan={2} className="text-center">No recent stock out</TableCell></TableRow>}
@@ -694,8 +699,8 @@ export default function InventoryPage() {
                   <ul className="space-y-2">
                     {lowStockItems.map(item => (
                       <li key={item.id} className="flex justify-between items-center">
-                        <span>{item.name}</span>
-                        <span className="text-orange-600 font-semibold">{item.current_stock} {item.unit}</span>
+                        <span>{safeName(item)}</span>
+                        <span className="text-orange-600 font-semibold">{item.current_stock} {safeUnit(item)}</span>
                       </li>
                     ))}
                   </ul>
@@ -714,7 +719,7 @@ export default function InventoryPage() {
                   <ul className="space-y-2">
                     {items.filter(item => item.expiry_date).map(item => (
                       <li key={item.id} className="flex justify-between items-center">
-                        <span>{item.name}</span>
+                        <span>{safeName(item)}</span>
                         <span className="text-red-600 font-semibold">{item.expiry_date}</span>
                       </li>
                     ))}
@@ -735,12 +740,12 @@ export default function InventoryPage() {
               <ul className="space-y-2">
                 {stockIns.slice(0, 3).map(s => (
                   <li key={"in-"+s.id} className="flex items-center gap-2 text-green-700">
-                    <TrendingUp className="h-4 w-4" /> Stock In: {s.item.name} +{s.quantity} {s.item.unit}
+                    <TrendingUp className="h-4 w-4" /> Stock In: {safeName(s.item)} +{s.quantity} {safeUnit(s.item)}
                   </li>
                 ))}
                 {stockOuts.slice(0, 3).map(s => (
                   <li key={"out-"+s.id} className="flex items-center gap-2 text-red-700">
-                    <TrendingDown className="h-4 w-4" /> Stock Out: {s.item.name} -{s.quantity} {s.item.unit}
+                    <TrendingDown className="h-4 w-4" /> Stock Out: {safeName(s.item)} -{s.quantity} {safeUnit(s.item)}
                   </li>
                 ))}
                 {alerts.slice(0, 3).map(a => (
@@ -771,15 +776,15 @@ export default function InventoryPage() {
                   <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{item.name}</h3>
+                        <h3 className="font-medium">{safeName(item)}</h3>
                         <Badge variant="outline">{item.code}</Badge>
                         {item.is_low_stock && (
                           <Badge variant="destructive">Low Stock</Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Current: {item.current_stock} {item.unit} | 
-                        Min: {item.minimum_threshold} {item.unit} | 
+                        Current: {item.current_stock} {safeUnit(item)} | 
+                        Min: {item.minimum_threshold} {safeUnit(item)} | 
                         Value: Rs {(item.stock_value || 0).toFixed(2)}
                       </p>
                     </div>
@@ -812,7 +817,7 @@ export default function InventoryPage() {
                 {stockIns.map((stockIn) => (
                   <div key={stockIn.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <p className="font-medium">Item: {stockIn.item.name}</p>
+                      <p className="font-medium">Item: {safeName(stockIn.item)}</p>
                       <p className="text-sm text-muted-foreground">
                         {stockIn.quantity} units on {new Date(stockIn.date).toLocaleDateString()}
                       </p>
@@ -850,7 +855,22 @@ export default function InventoryPage() {
                 {stockOuts.map((stockOut) => (
                   <div key={stockOut.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <p className="font-medium">Item: {stockOut.item.name}</p>
+                      <p className="font-medium">
+                        Item: {
+                          (() => {
+                            if (
+                              typeof stockOut.item === 'object' &&
+                              stockOut.item !== null &&
+                              typeof (stockOut.item as { name?: string }).name === 'string'
+                            ) {
+                              return (stockOut.item as { name: string }).name;
+                            }
+                            const itemObj = items.find(i => i.id === stockOut.item);
+                            return itemObj ? itemObj.name : "Unknown";
+                          })()
+                        }
+                        {"}"}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {stockOut.quantity} units - {stockOut.reason}
                       </p>
@@ -890,7 +910,7 @@ export default function InventoryPage() {
                         <li key={alert.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-3 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
                           <div>
                             <span className="font-semibold text-orange-700">{alert.alert_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">Item: <span className="font-medium">{itemObj ? itemObj.name : alert.item_name || "Unknown"}</span></span>
+                            <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">Item: <span className="font-medium">{safeName(itemObj)}</span></span>
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{alert.message}</div>
                           </div>
                           <div className="flex items-center gap-2 mt-2 md:mt-0 md:ml-4">
