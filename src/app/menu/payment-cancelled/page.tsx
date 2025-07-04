@@ -9,9 +9,10 @@ import { XCircle } from "lucide-react"
 export default function PaymentCancelledPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const orderId = searchParams.get('order_id')
-  const tableId = searchParams.get('tableId')
-  const tableUid = searchParams.get('tableUid')
+  const orderId = searchParams?.get('order_id') ?? ''
+  const tableId = searchParams?.get('tableId') ?? ''
+  const tableUid = searchParams?.get('tableUid') ?? ''
+  const transactionUuid = searchParams?.get('transaction_uuid') ?? ''
 
   useEffect(() => {
     // Auto-redirect after 5 seconds
