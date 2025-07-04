@@ -12,7 +12,7 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useLoading } from '@/contexts/LoadingContext'
 import LoadingOverlay from '@/components/LoadingOverlay'
-import { getApiUrl } from "@/lib/api"
+import { getApiUrl } from "@/lib/api-service"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
