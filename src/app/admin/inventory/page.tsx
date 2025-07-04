@@ -42,7 +42,7 @@ export default function InventoryPage() {
 
   const [categories, setCategories] = useState<InventoryCategory[]>([])
 
-  const API_BASE_URL = "http://127.0.0.1:8000/api/inventory/"
+  const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/inventory/`;
 
   const handleMarkAsRead = async (alertId: string | number) => {
     try {

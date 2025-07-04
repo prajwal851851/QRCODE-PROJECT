@@ -15,6 +15,7 @@ import { CreateCategoryDialog } from "./CreateCategoryDialog"
 import { PlusCircle, Barcode, DollarSign, FileText, User, Layers, Calendar, AlertCircle, X, Package, Ruler, Scale, Boxes, Warehouse, Pen, Tag, Trash2 } from "lucide-react"
 import { fetchWithAuth } from "@/lib/api-service"
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { getApiUrl } from "@/lib/api-service";
 
 const itemSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -86,7 +87,7 @@ export function InventoryItemForm({ item, onSuccess, onClose, suppliers, onOpenS
 
   const fetchCategories = async () => {
     try {
-      const res = await fetchWithAuth("http://127.0.0.1:8000/api/inventory/categories/")
+      const res = await fetchWithAuth(`${getApiUrl()}/api/inventory/categories/`)
       if (!res.ok) throw new Error("Failed to fetch categories.")
       const data = await res.json()
       setCategories(data.filter((cat: InventoryCategory) => !deletedCategories.has(cat.id)))
@@ -134,8 +135,8 @@ export function InventoryItemForm({ item, onSuccess, onClose, suppliers, onOpenS
     try {
       const method = item ? "PUT" : "POST"
       const url = item
-        ? `http://127.0.0.1:8000/api/inventory/items/${item.id}/`
-        : "http://127.0.0.1:8000/api/inventory/items/"
+        ? `${getApiUrl()}/api/inventory/items/${item.id}/`
+        : `${getApiUrl()}/api/inventory/items/`
 
       const response = await fetchWithAuth(url, {
         method,

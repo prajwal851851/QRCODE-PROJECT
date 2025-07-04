@@ -160,6 +160,7 @@ export type IngredientMapping = {
 }
 
 export type InventoryAlert = {
+  item_name: string
   id: number;
   alert_type: 'low_stock' | 'expiry' | 'out_of_stock';
   item: number;

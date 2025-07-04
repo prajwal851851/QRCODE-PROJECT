@@ -52,7 +52,7 @@ export function CreateSupplierDialog({ isOpen, onOpenChange, onSuccess }: Create
       const token = localStorage.getItem("adminAccessToken")
       if (!token) throw new Error("Authentication token not found.")
 
-      const response = await fetch("http://127.0.0.1:8000/api/inventory/suppliers/", {
+      const response = await fetch(`${getApiUrl()}/api/inventory/suppliers/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

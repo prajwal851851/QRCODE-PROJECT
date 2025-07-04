@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import type { InventoryItem } from "@/lib/types"
+import { getApiUrl } from "@/lib/api-service"
 
 const stockOutSchema = z.object({
   item: z.string({ required_error: "Please select an item." }),
@@ -46,7 +47,7 @@ export function StockOutForm({ items, onSuccess, onCancel }: StockOutFormProps) 
       // Transform payload for DRF: use item_id
       const payload: any = { ...data, item_id: data.item };
       delete payload.item;
-      const response = await fetch("http://127.0.0.1:8000/api/inventory/stock-outs/", {
+      const response = await fetch(`${getApiUrl()}/api/inventory/stock-outs/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

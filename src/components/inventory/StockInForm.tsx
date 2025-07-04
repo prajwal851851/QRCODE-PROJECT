@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import type { InventoryItem, Supplier } from "@/lib/types"
+import { getApiUrl } from "@/lib/api-service"
 
 const stockInSchema = z.object({
   item: z.string({ required_error: "Please select an item." }),
@@ -53,7 +54,7 @@ export function StockInForm({ items, suppliers, onSuccess, onCancel }: StockInFo
         payload.supplier_id = data.supplier;
         delete payload.supplier;
       }
-      const response = await fetch("http://127.0.0.1:8000/api/inventory/stock-ins/", {
+      const response = await fetch(`${getApiUrl()}/api/inventory/stock-ins/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

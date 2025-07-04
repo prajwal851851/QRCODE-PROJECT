@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Tag } from "lucide-react"
+import { getApiUrl } from "@/lib/api-service"
 
 const categorySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -41,7 +42,7 @@ export function CreateCategoryDialog({ isOpen, onOpenChange, onSuccess }: Create
       const token = localStorage.getItem("adminAccessToken")
       if (!token) throw new Error("Authentication token not found.")
 
-      const response = await fetch("http://127.0.0.1:8000/api/inventory/categories/", {
+      const response = await fetch(`${getApiUrl()}/api/inventory/categories/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
