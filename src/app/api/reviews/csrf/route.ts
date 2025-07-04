@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getApiUrl } from '../../../lib/api-service';
+import { getApiUrl } from '@/lib/api-service';
 
 export async function GET(request: NextRequest) {
   try {
