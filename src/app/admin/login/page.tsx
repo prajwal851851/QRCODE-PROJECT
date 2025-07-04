@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProviderCustom } from "@/components/theme-provider-custom"
 import { useLoading } from '@/contexts/LoadingContext'
+import { getApiUrl } from "@/lib/api"
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("")
@@ -84,7 +85,7 @@ export default function AdminLoginPage() {
 
     try {
       // Call the Django JWT authentication API with username instead of email
-      const response = await fetch("http://localhost:8000/authentaction/login/", {
+      const response = await fetch(getApiUrl() + "/authentaction/login/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
