@@ -1,5 +1,7 @@
 /*hello*/
 /*my name is prajwal*/
+/*i am a student of computer science and engineering*/
+/*i am a student of computer science and engineering*/
 'use client';
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
