@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
