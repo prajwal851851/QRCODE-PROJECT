@@ -19,6 +19,7 @@ import i18n from "@/lib/i18n"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLoading } from '@/contexts/LoadingContext'
+import { getApiUrl } from '@/lib/api-service'
 
 interface Review {
   order_id: number | string | null;
@@ -73,7 +74,7 @@ export default function DashboardPage() {
   const fetchStats = useCallback(async (filter = appliedFilter) => {
     setLoading(true)
     try {
-      let url = "http://localhost:8000/api/orders/dashboard_full_stats/"
+      let url = `${getApiUrl()}/api/orders/dashboard_full_stats/`
       const params = new URLSearchParams();
       if (filter) {
         if (filter.type === 'day' && filter.date) {
@@ -103,21 +104,21 @@ export default function DashboardPage() {
       const data = await res.json()
 
       // Fetch feedback overview
-      const feedbackRes = await fetchWithAuth("http://localhost:8000/api/reviews/feedback-overview/")
+      const feedbackRes = await fetchWithAuth(`${getApiUrl()}/api/reviews/feedback-overview/`)
       if (feedbackRes.ok) {
         const feedbackData = await feedbackRes.json()
         data.feedback_overview = feedbackData
       }
 
       // Fetch popular items
-      const popularItemsRes = await fetchWithAuth("http://localhost:8000/api/popular-items/")
+      const popularItemsRes = await fetchWithAuth(`${getApiUrl()}/api/popular-items/`)
       if (popularItemsRes.ok) {
         const popularItemsData = await popularItemsRes.json()
         data.popular_items = popularItemsData
       }
 
       // Fetch table performance
-      const tablePerformanceRes = await fetchWithAuth("http://localhost:8000/api/table-performance/")
+      const tablePerformanceRes = await fetchWithAuth(`${getApiUrl()}/api/table-performance/`)
       if (tablePerformanceRes.ok) {
         const tablePerformanceData = await tablePerformanceRes.json()
         data.table_performance = tablePerformanceData
@@ -125,7 +126,7 @@ export default function DashboardPage() {
 
       // Fetch peak hours analysis
       console.log("Fetching peak hours data...")
-      const peakHoursRes = await fetchWithAuth("http://localhost:8000/api/peak-hours/")
+      const peakHoursRes = await fetchWithAuth(`${getApiUrl()}/api/peak-hours/`)
       if (peakHoursRes.ok) {
         const peakHoursData = await peakHoursRes.json()
         console.log("Peak hours data received:", peakHoursData)
@@ -155,7 +156,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchWaiterCalls = async () => {
       try {
-        const res = await fetchWithAuth("http://localhost:8000/api/waiter_call/active/")
+        const res = await fetchWithAuth(`${getApiUrl()}/api/waiter_call/active/`)
         if (!res.ok) return
         const data = await res.json()
         setWaiterCalls(data)
@@ -168,7 +169,7 @@ export default function DashboardPage() {
 
   const resolveWaiterCall = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/waiter_call/${id}/resolve/`, { method: 'POST' })
+      const res = await fetch(`${getApiUrl()}/api/waiter_call/${id}/resolve/`, { method: 'POST' })
       if (res.ok) {
         setWaiterCalls((prev) => prev.filter((c) => c.id !== id))
       }
@@ -199,7 +200,7 @@ export default function DashboardPage() {
   const fetchReviews = async () => {
     setLoadingReviews(true)
     try {
-      const res = await fetchWithAuth("http://localhost:8000/api/reviews/")
+      const res = await fetchWithAuth(`${getApiUrl()}/api/reviews/`)
       if (!res.ok) throw new Error("Failed to fetch reviews")
       const data = await res.json()
       setReviews(data)
@@ -246,7 +247,7 @@ export default function DashboardPage() {
             onClick={async () => {
               dismissToast()
               try {
-                const response = await fetchWithAuth(`http://localhost:8000/api/reviews/${reviewId}/`, {
+                const response = await fetchWithAuth(`${getApiUrl()}/api/reviews/${reviewId}/`, {
         method: "DELETE",
       })
       
@@ -269,7 +270,7 @@ export default function DashboardPage() {
                       onClick={async () => {
                         try {
                           // Recreate the review
-                          const response = await fetchWithAuth("http://localhost:8000/api/reviews/create/", {
+                          const response = await fetchWithAuth(`${getApiUrl()}/api/reviews/create/`, {
                             method: "POST",
                             headers: {
                               "Content-Type": "application/json",
@@ -364,7 +365,7 @@ export default function DashboardPage() {
                 const reviewsToDelete = [...reviews]
                 setDeletedReviews(reviewsToDelete)
                 
-                const response = await fetchWithAuth("http://localhost:8000/api/reviews/delete-all/", {
+                const response = await fetchWithAuth(`${getApiUrl()}/api/reviews/delete-all/`, {
         method: "DELETE",
       })
       
@@ -385,7 +386,7 @@ export default function DashboardPage() {
                         try {
                           // Restore all reviews using the local variable
                           const restorePromises = reviewsToDelete.map(review =>
-                            fetchWithAuth("http://localhost:8000/api/reviews/create/", {
+                            fetchWithAuth(`${getApiUrl()}/api/reviews/create/`, {
                               method: "POST",
                               headers: {
                                 "Content-Type": "application/json",

@@ -42,7 +42,22 @@ export function ResponsiveAdminSidebar({ children }: SidebarProps) {
 
   useEffect(() => { setMounted(true) }, [])
 
-  const routes = [
+  type SubmenuType = {
+    label: string;
+    href: string;
+    active: boolean;
+    permissions?: string[];
+  };
+  type RouteType = {
+    label: string;
+    icon: any;
+    href: string;
+    active: boolean;
+    permissions: string[];
+    submenu?: SubmenuType[];
+  };
+
+  const routes: RouteType[] = [
     {
       label: "Welcome",
       icon: Home,

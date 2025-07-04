@@ -49,7 +49,7 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const { setShow } = useLoading()
 
-  const API_BASE_URL = "http://127.0.0.1:8000/api/inventory/"
+  const API_BASE_URL = `${getApiUrl()}/api/inventory/`
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -166,7 +166,7 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
       setChangePwError('New passwords do not match.');
       return;
     }
-    const res = await fetchWithAuth(getApiUrl('authentaction/change-password/'), {
+    const res = await fetchWithAuth(getApiUrl() + 'authentaction/change-password/', {
       method: 'POST',
       body: JSON.stringify({
         current_password: pwForm.current,
@@ -242,7 +242,7 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
                   >
                     <div className="flex-1">
                       <p className="text-sm font-medium">
-                        {n.alert_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - {n.item?.name || 'Unknown Item'}
+                        {n.alert_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - {typeof n.item === 'object' && n.item !== null && 'name' in n.item ? (n.item as { name: string }).name : 'Unknown Item'}
                       </p>
                       <p className="text-xs text-muted-foreground">{n.message}</p>
                       <p className="text-xs text-muted-foreground">

@@ -32,6 +32,13 @@ interface WaiterCallNotification {
   created_at: string
 }
 
+// Fix for TypeScript: ensure AudioContext is recognized on window
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+}
+
 export function PaymentNotificationSystem() {
   const [notifications, setNotifications] = useState<PaymentNotification[]>([])
   const [orderNotifications, setOrderNotifications] = useState<OrderNotification[]>([])
@@ -41,7 +48,7 @@ export function PaymentNotificationSystem() {
   const [waiterCalls, setWaiterCalls] = useState<WaiterCallNotification[]>([])
 
   // Audio context ref
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioContextRef: React.MutableRefObject<AudioContext | null> = useRef<AudioContext | null>(null);
   
   // Track previous notifications to detect new ones
   const prevPaymentIds = useRef<string[]>([]);
@@ -105,7 +112,9 @@ export function PaymentNotificationSystem() {
       window.speechSynthesis.speak(utterance);
     } else {
       // fallback: beep
-      const audioContext = audioContextRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const audioContext = audioContextRef.current || new AudioContextClass();
+      audioContextRef.current = audioContext;
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       oscillator.connect(gainNode);
@@ -133,7 +142,7 @@ export function PaymentNotificationSystem() {
         
         // Play horn if new payment detected (skip on initial load)
         if (!isInitialLoad.current && prevPaymentIds.current.length > 0 && newIds.length > 0) {
-          const hasNewPayment = newIds.some(id => !prevPaymentIds.current.includes(id));
+          const hasNewPayment = newIds.some((id: string) => !prevPaymentIds.current.includes(id));
           if (hasNewPayment) {
             const newPayment = data.find((p: any) => !prevPaymentIds.current.includes(p.id));
             playNotificationSound('payment', {
@@ -182,7 +191,7 @@ export function PaymentNotificationSystem() {
           
           // Play order sound if new order detected (skip on initial load)
           if (!isInitialLoad.current && prevOrderIds.current.length > 0 && newIds.length > 0) {
-            const hasNewOrder = newIds.some(id => !prevOrderIds.current.includes(id));
+            const hasNewOrder = newIds.some((id: string) => !prevOrderIds.current.includes(id));
             if (hasNewOrder) {
               const newOrder = data.recent_orders.find((o: any) => !prevOrderIds.current.includes(o.id));
               playNotificationSound('order', {
@@ -235,13 +244,13 @@ export function PaymentNotificationSystem() {
           newIds: newIds,
           prevCount: prevWaiterIds.current.length,
           newCount: newIds.length,
-          hasNewCalls: newIds.some(id => !prevWaiterIds.current.includes(id)),
-          newCallIds: newIds.filter(id => !prevWaiterIds.current.includes(id))
+          hasNewCalls: newIds.some((id: number) => !prevWaiterIds.current.includes(id)),
+          newCallIds: newIds.filter((id: number) => !prevWaiterIds.current.includes(id))
         });
         
         // Play waiter sound if new waiter call detected (skip on initial load)
         if (!isInitialLoad.current && newIds.length > 0) {
-          const hasNewWaiterCall = newIds.some(id => !prevWaiterIds.current.includes(id));
+          const hasNewWaiterCall = newIds.some((id: number) => !prevWaiterIds.current.includes(id));
           if (hasNewWaiterCall) {
             const newCall = data.find((c: any) => !prevWaiterIds.current.includes(c.id));
             playNotificationSound('waiter', {
@@ -385,9 +394,12 @@ export function PaymentNotificationSystem() {
                         {getStatusIcon(order.status)}
                         <p className="font-medium text-sm">
                           Table {order.table_name} - Rs {(() => {
-                            let total = order.total;
+                            let total: string | number = order.total;
                             if (typeof total === 'string') {
                               total = total.replace(/[^\d.]/g, '');
+                            }
+                            if (typeof total !== 'number' && typeof total !== 'string') {
+                              return '0.00';
                             }
                             const num = Number(total);
                             return isNaN(num) ? '0.00' : num.toFixed(2);

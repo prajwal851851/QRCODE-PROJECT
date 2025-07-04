@@ -69,7 +69,8 @@ export function QRCodeGenerator({
         const actualQrSize = Math.min(qrSize - 40, qrSize * 0.8) // Smaller of 40px margin or 80% of container
         
         // Generate the QR code directly on the canvas
-        const qrValue = public_id ? `http://localhost:3003/menu?tableUid=${public_id}` : value
+        const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://your-frontend-url.vercel.app';
+        const qrValue = public_id ? `${frontendUrl}/menu?tableUid=${public_id}` : value
         await QRCode.toCanvas(canvas, qrValue, {
           width: actualQrSize,
           margin: 0, // We're handling the margin ourselves
