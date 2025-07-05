@@ -606,93 +606,175 @@ export default function PaymentsPage() {
     }
   }
 
-  const renderPaymentTable = (tab: string) => (
-    <Card>
-      <CardHeader>
-        <CardTitle>{tab.charAt(0).toUpperCase() + tab.slice(1)} Payments</CardTitle>
-        <CardDescription>
-          {tab === "all" ? "A list of all payment transactions." : `List of ${tab} payment transactions.`}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableCaption>
-            {tab === "all" ? "A list of all payment transactions." : `List of ${tab} payment transactions.`}
-          </TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Payment ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {applyFiltersAndSort(payments, tab).map((payment) => (
-              < TableRow key = { payment.id } >
-                <TableCell className="font-medium">{payment.id}</TableCell>
-                <TableCell>{payment.customer}</TableCell>
-                <TableCell>{payment.amount}</TableCell>
-                <TableCell>{payment.method}</TableCell>
-                <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                <TableCell>{formatDate(payment.date)}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Actions</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setSelectedPayment(payment)
-                          setViewDetailsDialogOpen(true)
-                        }}
-                      >
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handlePrintReceipt(payment)}>
-                        Print Receipt
-                      </DropdownMenuItem>
-                      {payment.status === "failed" && (
-                        <DropdownMenuItem onClick={() => handleRetryPayment(payment.id)}>
-                          <RefreshCw className="mr-2 h-4 w-4" /> Retry Payment
-                        </DropdownMenuItem>
-                      )}
-                      {payment.status === "completed" && (
+  const renderPaymentTable = (tab: string) => {
+    const filteredPayments = applyFiltersAndSort(payments, tab);
+    
+    return (
+      <>
+        {/* Mobile Card View */}
+        <div className="block sm:hidden">
+          <div className="space-y-4">
+            {filteredPayments.map((payment) => (
+              <Card key={payment.id} className="p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg">Payment #{payment.id}</h3>
+                      <p className="text-sm text-muted-foreground">{payment.customer}</p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
                           onClick={() => {
                             setSelectedPayment(payment)
-                            setRefundDialogOpen(true)
+                            setViewDetailsDialogOpen(true)
                           }}
+                        >
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handlePrintReceipt(payment)}>
+                          Print Receipt
+                        </DropdownMenuItem>
+                        {payment.status === "failed" && (
+                          <DropdownMenuItem onClick={() => handleRetryPayment(payment.id)}>
+                            <RefreshCw className="mr-2 h-4 w-4" /> Retry Payment
+                          </DropdownMenuItem>
+                        )}
+                        {payment.status === "completed" && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedPayment(payment)
+                              setRefundDialogOpen(true)
+                            }}
+                            className="text-red-600"
+                          >
+                            Refund Payment
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          onClick={() => handleDeletePayment(payment.id)}
                           className="text-red-600"
                         >
-                          Refund Payment
+                          Delete
                         </DropdownMenuItem>
-                      )}
-                      
-                      <DropdownMenuItem
-                        onClick={() => handleDeletePayment(payment.id)}
-                        className="text-red-600"
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <div className="text-sm">
+                      <span className="font-medium">Amount:</span> {payment.amount}
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-medium">Method:</span> {payment.method}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    {getStatusBadge(payment.status)}
+                    <span className="text-xs text-muted-foreground">{formatDate(payment.date)}</span>
+                  </div>
+                </div>
+              </Card>
             ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  )
+          </div>
+        </div>
+
+        {/* Desktop Table View */}
+        <Card className="hidden sm:block">
+          <CardHeader>
+            <CardTitle>{tab.charAt(0).toUpperCase() + tab.slice(1)} Payments</CardTitle>
+            <CardDescription>
+              {tab === "all" ? "A list of all payment transactions." : `List of ${tab} payment transactions.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableCaption>
+                {tab === "all" ? "A list of all payment transactions." : `List of ${tab} payment transactions.`}
+              </TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Payment ID</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredPayments.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell className="font-medium">{payment.id}</TableCell>
+                    <TableCell>{payment.customer}</TableCell>
+                    <TableCell>{payment.amount}</TableCell>
+                    <TableCell>{payment.method}</TableCell>
+                    <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                    <TableCell>{formatDate(payment.date)}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Actions</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedPayment(payment)
+                              setViewDetailsDialogOpen(true)
+                            }}
+                          >
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handlePrintReceipt(payment)}>
+                            Print Receipt
+                          </DropdownMenuItem>
+                          {payment.status === "failed" && (
+                            <DropdownMenuItem onClick={() => handleRetryPayment(payment.id)}>
+                              <RefreshCw className="mr-2 h-4 w-4" /> Retry Payment
+                            </DropdownMenuItem>
+                          )}
+                          {payment.status === "completed" && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedPayment(payment)
+                                setRefundDialogOpen(true)
+                              }}
+                              className="text-red-600"
+                            >
+                              Refund Payment
+                            </DropdownMenuItem>
+                          )}
+                          
+                          <DropdownMenuItem
+                            onClick={() => handleDeletePayment(payment.id)}
+                            className="text-red-600"
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </>
+    )
+  }
 
   // Modify handleAddCharge to use async getAuthTokens
   const handleAddCharge = async () => {
@@ -990,14 +1072,14 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background text-foreground px-2 sm:px-6 py-6">
+    <div className="space-y-6 bg-background text-foreground px-4 sm:px-6 py-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="w-full sm:w-auto">
-          <h2 className="text-3xl font-bold tracking-tight">Payments</h2>
-          <p className="text-muted-foreground">
+        <div className="w-full sm:w-auto text-center sm:text-left">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Payments</h2>
+          <p className="text-muted-foreground text-sm sm:text-base">
             View and manage all payments.
           </p>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 justify-center sm:justify-start">
             {isRefreshing && (
               <RefreshCw className="h-4 w-4 animate-spin" />
             )}
@@ -1052,10 +1134,10 @@ export default function PaymentsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Extra Charges</CardTitle>
-              <CardDescription>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="w-full sm:w-auto">
+              <CardTitle className="text-lg sm:text-xl">Extra Charges</CardTitle>
+              <CardDescription className="text-sm">
                 Manage extra charges like Service Fee, VAT, etc. These will be shown to customers during checkout.
               </CardDescription>
             </div>
@@ -1064,7 +1146,7 @@ export default function PaymentsPage() {
               size="sm" 
               onClick={refreshExtraCharges}
               disabled={isLoading}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
@@ -1076,19 +1158,19 @@ export default function PaymentsPage() {
             {isLoading ? (
               <div>Loading charges...</div>
             ) : extraCharges.length === 0 ? (
-              <p>No extra charges added yet.</p>
+              <p className="text-sm text-muted-foreground">No extra charges added yet.</p>
             ) : (
               extraCharges.map((charge, idx) => (
-                <div key={charge.id} className="flex items-center gap-2 bg-muted px-3 py-1 rounded-full text-sm">
+                <div key={charge.id} className="flex items-center gap-2 bg-muted px-3 py-1 rounded-full text-xs sm:text-sm">
                   <span>{charge.label}: <span className="font-bold">Rs {(Number(charge.amount)).toFixed(2)}</span></span>
                   <Button 
                     size="icon" 
                     variant="ghost" 
                     onClick={() => handleRemoveCharge(idx)}
                     disabled={isLoading}
-                    className="h-6 w-6"
+                    className="h-5 w-5 sm:h-6 sm:w-6"
                   >
-                    <span className="text-red-500">&times;</span>
+                    <span className="text-red-500 text-xs sm:text-sm">&times;</span>
                   </Button>
                 </div>
               ))
@@ -1096,25 +1178,25 @@ export default function PaymentsPage() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2 items-end w-full">
             <div className="w-full sm:w-auto flex-1">
-              <Label htmlFor="charge-label" className="sr-only">Label</Label>
+              <Label htmlFor="charge-label" className="text-xs sm:text-sm mb-1 block">Label</Label>
               <Input
                 id="charge-label"
                 placeholder="Label (e.g. Service Fee)"
                 value={newCharge.label}
                 onChange={e => setNewCharge({ ...newCharge, label: e.target.value })}
-                className="w-full"
+                className="w-full text-sm"
                 disabled={isLoading}
               />
             </div>
             <div className="w-full sm:w-auto">
-              <Label htmlFor="charge-amount" className="sr-only">Amount</Label>
+              <Label htmlFor="charge-amount" className="text-xs sm:text-sm mb-1 block">Amount</Label>
               <Input
                 id="charge-amount"
                 type="number"
                 placeholder="Amount"
                 value={newCharge.amount}
                 onChange={e => setNewCharge({ ...newCharge, amount: Number(e.target.value) })}
-                className="w-full"
+                className="w-full text-sm"
                 min="0"
                 step="0.01"
                 disabled={isLoading}
@@ -1123,7 +1205,7 @@ export default function PaymentsPage() {
             <Button 
               onClick={handleAddCharge} 
               disabled={isLoading || !newCharge.label || isNaN(newCharge.amount) || newCharge.amount <= 0}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto text-sm"
             >
               {isLoading ? "Adding..." : "Add Charge"}
             </Button>
@@ -1137,34 +1219,10 @@ export default function PaymentsPage() {
           <TabsTrigger value="esewa">eSewa</TabsTrigger>
         </TabsList>
         <TabsContent value="all" className="mt-4">
-          <Card className="border">
-            <CardHeader>
-              <CardTitle>All Payments</CardTitle>
-              <CardDescription>
-                A list of all payments in your restaurant.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                {renderPaymentTable("all")}
-              </div>
-            </CardContent>
-          </Card>
+          {renderPaymentTable("all")}
         </TabsContent>
         <TabsContent value="esewa" className="mt-4">
-          <Card className="border">
-            <CardHeader>
-              <CardTitle>eSewa Payments</CardTitle>
-              <CardDescription>
-                A list of all eSewa payments in your restaurant.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                {renderPaymentTable("esewa")}
-              </div>
-            </CardContent>
-          </Card>
+          {renderPaymentTable("esewa")}
         </TabsContent>
       </Tabs>
 
