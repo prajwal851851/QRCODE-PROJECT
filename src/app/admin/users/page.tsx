@@ -129,7 +129,7 @@ export default function UsersPage() {
         console.log("Request headers:", headers);
         
         // First get current user data to determine role and permissions
-        const currentUserResponse = await fetch(`${getApiUrl()}/user_role/users/me/`, {
+        const currentUserResponse = await fetch(`${getApiUrl()}/api/user_role/users/me/`, {
           headers: {
             ...headers,
             "X-CSRFToken": headers["X-CSRFToken"] || "",
@@ -157,11 +157,11 @@ export default function UsersPage() {
         }));
         
         // Determine which endpoint to use based on user role
-        let usersEndpoint = `${getApiUrl()}/user_role/users/`;
+        let usersEndpoint = `${getApiUrl()}/api/user_role/users/`;
         
         // If the user is a regular admin (not super_admin), get only users they created AND themselves
         if (currentUserData.role === 'admin') {
-          usersEndpoint = `${getApiUrl()}/user_role/users/my-users/`;
+          usersEndpoint = `${getApiUrl()}/api/user_role/users/my-users/`;
         }
         
         const response = await fetch(usersEndpoint, {
@@ -433,7 +433,7 @@ export default function UsersPage() {
 
     try {
       let responseData;
-      const response = await fetch(`${getApiUrl()}/user_role/users/`, {
+      const response = await fetch(`${getApiUrl()}/api/user_role/users/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -489,7 +489,7 @@ export default function UsersPage() {
         // We need to update the user in the backend to ensure created_by is properly set
         try {
           console.log("Updating created_by on backend for user:", responseData.id);
-          const updateResponse = await fetch(`${getApiUrl()}/user_role/users/${responseData.id}/`, {
+          const updateResponse = await fetch(`${getApiUrl()}/api/user_role/users/${responseData.id}/`, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -582,7 +582,7 @@ export default function UsersPage() {
         "X-CSRFToken": getCSRFToken(),
       };
       
-      const currentUserResponse = await fetch(`${getApiUrl()}/user_role/users/me/`, {
+      const currentUserResponse = await fetch(`${getApiUrl()}/api/user_role/users/me/`, {
         headers: {
           ...headers,
           "X-CSRFToken": headers["X-CSRFToken"] || "",
@@ -674,7 +674,7 @@ export default function UsersPage() {
         changes.push(`${permissionsRemoved} permission${permissionsRemoved !== 1 ? 's' : ''} removed`);
       }
 
-      const response = await fetch(`${getApiUrl()}/user_role/users/${selectedUser.id}/`, {
+      const response = await fetch(`${getApiUrl()}/api/user_role/users/${selectedUser.id}/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -749,7 +749,7 @@ export default function UsersPage() {
         "X-CSRFToken": getCSRFToken(),
       };
       
-      const currentUserResponse = await fetch(`${getApiUrl()}/user_role/users/me/`, {
+      const currentUserResponse = await fetch(`${getApiUrl()}/api/user_role/users/me/`, {
         headers: {
           ...headers,
           "X-CSRFToken": headers["X-CSRFToken"] || "",
@@ -771,7 +771,7 @@ export default function UsersPage() {
         throw new Error("You don't have permission to delete this user.");
       }
 
-      const response = await fetch(`${getApiUrl()}/user_role/users/${userToDelete.id}/`, {
+      const response = await fetch(`${getApiUrl()}/api/user_role/users/${userToDelete.id}/`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("adminAccessToken")}`,
@@ -1008,7 +1008,7 @@ export default function UsersPage() {
                                     "X-CSRFToken": getCSRFToken(),
                                   };
                                   
-                                  const currentUserResponse = await fetch(`${getApiUrl()}/user_role/users/me/`, {
+                                  const currentUserResponse = await fetch(`${getApiUrl()}/api/user_role/users/me/`, {
                                     headers: {
                                       ...headers,
                                       "X-CSRFToken": headers["X-CSRFToken"] || "",
@@ -1112,7 +1112,7 @@ export default function UsersPage() {
                                     "X-CSRFToken": getCSRFToken(),
                                   };
                                   
-                                  const currentUserResponse = await fetch(`${getApiUrl()}/user_role/users/me/`, {
+                                  const currentUserResponse = await fetch(`${getApiUrl()}/api/user_role/users/me/`, {
                                     headers: {
                                       ...headers,
                                       "X-CSRFToken": headers["X-CSRFToken"] || "",
