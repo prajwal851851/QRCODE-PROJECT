@@ -1121,14 +1121,19 @@ export default function PaymentsPage() {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Button onClick={handleExport} className="w-full sm:w-auto">
+          <Button 
+            onClick={handleExport} 
+            className="w-full sm:w-auto h-10 sm:h-9 touch-manipulation"
+            onTouchStart={(e) => e.stopPropagation()}
+          >
             <Download className="mr-2 h-4 w-4" />
             Export Data
           </Button>
           <Button
             variant="destructive"
             onClick={handleDeleteAllPayments}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto h-10 sm:h-9 touch-manipulation"
+            onTouchStart={(e) => e.stopPropagation()}
           >
             Delete All Payments
           </Button>
@@ -1150,14 +1155,16 @@ export default function PaymentsPage() {
           <Button
             variant="outline"
             onClick={() => setFilterDialogOpen(true)}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto h-10 sm:h-9 touch-manipulation"
+            onTouchStart={(e) => e.stopPropagation()}
           >
             Filter
           </Button>
           <Button
             variant="outline"
             onClick={() => setSortDialogOpen(true)}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto h-10 sm:h-9 touch-manipulation"
+            onTouchStart={(e) => e.stopPropagation()}
           >
             Sort
           </Button>
@@ -1178,9 +1185,10 @@ export default function PaymentsPage() {
               size="sm" 
               onClick={refreshExtraCharges}
               disabled={isLoading}
-              className="flex items-center gap-2 w-full sm:w-auto"
+              className="flex items-center gap-2 w-full sm:w-auto h-10 sm:h-9 touch-manipulation"
+              onTouchStart={(e) => e.stopPropagation()}
             >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-5 w-5 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
@@ -1237,7 +1245,8 @@ export default function PaymentsPage() {
             <Button 
               onClick={handleAddCharge} 
               disabled={isLoading || !newCharge.label || isNaN(newCharge.amount) || newCharge.amount <= 0}
-              className="w-full sm:w-auto text-sm"
+              className="w-full sm:w-auto text-sm h-10 sm:h-9 touch-manipulation"
+              onTouchStart={(e) => e.stopPropagation()}
             >
               {isLoading ? "Adding..." : "Add Charge"}
             </Button>
