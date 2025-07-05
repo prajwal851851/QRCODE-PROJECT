@@ -416,46 +416,62 @@ class OrderViewSet(viewsets.ModelViewSet):
         print(f"[OrderViewSet] Order creation completed: {order.id}")
 
     def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
+        try:
+            serializer.save(user=self.request.user)
+        except Exception as e:
+            print(f"Error in perform_update: {str(e)}")
+            raise
 
     @action(detail=True, methods=['post'])
-    def update_status(self, request, pk=None):
-        order = self.get_object()
-        new_status = request.data.get('status')
-        
-        if not new_status:
-            return Response({'error': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
+    def update_status(self, request, id=None):
+        try:
+            order = Order.objects.get(id=id)
+            new_status = request.data.get('status')
             
-        if new_status not in dict(Order.STATUS_CHOICES):
-            return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+            if not new_status:
+                return Response({'error': 'Status is required'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if new_status not in dict(Order.STATUS_CHOICES):
+                return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            order.status = new_status
+            order.save()
             
-        order.status = new_status
-        order.save()
-        
-        # Here you could add notification logic
-        return Response({'status': 'success'})
+            # Here you could add notification logic
+            return Response({'status': 'success'})
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Error updating order status: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'])
-    def update_payment(self, request, pk=None):
-        order = self.get_object()
-        payment_status = request.data.get('payment_status')
-        payment_method = request.data.get('payment_method')
-        
-        if not payment_status:
-            return Response({'error': 'Payment status is required'}, status=status.HTTP_400_BAD_REQUEST)
+    def update_payment(self, request, id=None):
+        try:
+            order = Order.objects.get(id=id)
+            payment_status = request.data.get('payment_status')
+            payment_method = request.data.get('payment_method')
             
-        if payment_status not in dict(Order.PAYMENT_STATUS_CHOICES):
-            return Response({'error': 'Invalid payment status'}, status=status.HTTP_400_BAD_REQUEST)
+            if not payment_status:
+                return Response({'error': 'Payment status is required'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if payment_status not in dict(Order.PAYMENT_STATUS_CHOICES):
+                return Response({'error': 'Invalid payment status'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if payment_method and payment_method not in dict(Order.PAYMENT_METHOD_CHOICES):
+                return Response({'error': 'Invalid payment method'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            order.payment_status = payment_status
+            if payment_method:
+                order.payment_method = payment_method
+            order.save()
             
-        if payment_method and payment_method not in dict(Order.PAYMENT_METHOD_CHOICES):
-            return Response({'error': 'Invalid payment method'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        order.payment_status = payment_status
-        if payment_method:
-            order.payment_method = payment_method
-        order.save()
-        
-        return Response({'status': 'success'})
+            return Response({'status': 'success'})
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Error updating order payment: {str(e)}")
+            return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def dashboard_stats(self, request):
