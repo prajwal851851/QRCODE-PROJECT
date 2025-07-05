@@ -1114,8 +1114,8 @@ export default function DashboardPage() {
                             key={i}
                             className={`w-4 h-4 ${
                               typeof stats.feedback_overview.average_rating === "number" && i < Math.round(stats.feedback_overview.average_rating)
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-muted-foreground"
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-gray-300"
                             }`}
                           />
                         ))}
@@ -1135,11 +1135,11 @@ export default function DashboardPage() {
                         <div key={rating} className="flex items-center gap-2">
                           <div className="flex items-center w-16">
                             <span className="text-sm font-medium">{rating}</span>
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 ml-1" />
+                            <Star className="w-4 h-4 fill-amber-400 text-amber-400 ml-1" />
                           </div>
-                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-yellow-400"
+                              className="h-full bg-amber-400"
                               style={{ width: `${percentage}%` }}
                             />
                           </div>
@@ -1155,7 +1155,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">{t("Positive Reviews (4-5★)")}</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-2xl font-bold text-emerald-600">
                       {typeof stats.feedback_overview.positive_reviews_percentage === "number"
                         ? stats.feedback_overview.positive_reviews_percentage.toFixed(1) + "%"
                         : "0.0%"}
@@ -1163,7 +1163,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">{t("Negative Reviews (1-2★)")}</p>
-                    <p className="text-2xl font-bold text-red-600">
+                    <p className="text-2xl font-bold text-rose-500">
                       {typeof stats.feedback_overview.negative_reviews_percentage === "number"
                         ? stats.feedback_overview.negative_reviews_percentage.toFixed(1) + "%"
                         : "0.0%"}
@@ -1209,106 +1209,71 @@ export default function DashboardPage() {
       </div>
 
       {/* Reviews Dialog */}
-      <AnimatePresence>
-        {showReviews && (
       <Dialog open={showReviews} onOpenChange={setShowReviews}>
-            <DialogContent
-              className={`max-w-3xl max-h-[80vh] overflow-y-auto ${styles.customScrollbar} bg-white/30 backdrop-blur-lg shadow-2xl border border-white/40 rounded-2xl p-6 animate-fadeIn`}
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 40 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-              >
-          <DialogHeader className="flex flex-row items-center justify-between">
-                  <DialogTitle className="text-xl font-bold text-gray-900 drop-shadow">{t("Customer Reviews")}</DialogTitle>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white border border-gray-200 rounded-lg">
+          <DialogHeader className="flex flex-row items-center justify-between pb-4">
+            <DialogTitle className="text-lg font-semibold text-gray-900">{t("Customer Reviews")}</DialogTitle>
             {reviews.length > 0 && (
               <Button
                 onClick={handleDeleteAllReviews}
-                variant="destructive"
+                variant="outline"
                 size="sm"
-                      className="flex items-center gap-2 h-8 px-3 shadow hover:scale-105 transition-transform"
+                className="text-red-600 border-red-200 hover:bg-red-50"
               >
-                <Delete className="w-4 h-4" />
+                <Delete className="w-4 h-4 mr-1" />
                 {t("Delete All")}
               </Button>
             )}
           </DialogHeader>
-                <div className="space-y-6 mt-4">
+          
+          <div className="space-y-4">
             {loadingReviews ? (
-                    <div className="text-center py-4 animate-pulse text-lg text-gray-700">{t("Loading reviews...")}</div>
-                  ) :
-                    reviews.length > 0 ? (
-                      reviews.map((review: Review, idx) => (
-                        <motion.div
-                          key={review.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.07, duration: 0.4, type: "spring", bounce: 0.2 }}
-                        >
-                          <Card className="hover:shadow-2xl transition-shadow bg-white/60 backdrop-blur rounded-xl border border-white/40 p-4 group relative overflow-hidden">
-                            <div className="absolute inset-0 pointer-events-none group-hover:bg-primary/10 transition-colors duration-300 rounded-xl" />
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                                  <CardTitle className="text-lg text-gray-900 drop-shadow">{t("Order #")}{review.order_id ?? 'N/A'}</CardTitle>
-                                  <CardDescription className="text-gray-700/80">{review.customer_name || t("Anonymous")}</CardDescription>
-                      </div>
-                                <motion.div className="flex items-center gap-1"
-                                  initial="hidden"
-                                  animate="visible"
-                                  variants={{
-                                    hidden: {},
-                                    visible: { transition: { staggerChildren: 0.07 } }
-                                  }}
-                                >
-                        {[...Array(5)].map((_, i) => (
-                                    <motion.span
-                            key={i}
-                                      variants={{
-                                        hidden: { scale: 0.7, opacity: 0 },
-                                        visible: { scale: 1, opacity: 1 }
-                                      }}
-                                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                    >
-                                      <Star
-                                        className={`w-5 h-5 transition-colors duration-200 ${i < review.rating ? "fill-yellow-400 text-yellow-400 drop-shadow" : "text-gray-300"}`}
-                                      />
-                                    </motion.span>
-                                  ))}
-                                </motion.div>
+              <div className="text-center py-8 text-gray-600">{t("Loading reviews...")}</div>
+            ) : reviews.length > 0 ? (
+              reviews.map((review: Review) => (
+                <div
+                  key={review.id}
+                  className="p-4 border border-gray-100 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{t("Order #")}{review.order_id ?? 'N/A'}</h4>
+                      <p className="text-sm text-gray-600">{review.customer_name || t("Anonymous")}</p>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                              <p className="text-base text-gray-800 font-medium animate-fadeInUp">{review.comment}</p>
-                              <p className="text-xs text-gray-500/80 mt-2 animate-fadeInUp">
-                      {new Date(review.created_at).toLocaleString()}
-                    </p>
-                  </CardContent>
-                  <CardFooter>
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${i < review.rating ? "text-amber-400 fill-amber-400" : "text-gray-300"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-2">{review.comment}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(review.created_at).toLocaleString()}
+                  </p>
+                  
+                  <div className="mt-3 flex justify-end">
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="sm"
                       onClick={() => handleDeleteReview(review.id)}
-                                className="text-destructive hover:text-destructive/90 hover:scale-110 transition-transform"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete
                     </Button>
-                  </CardFooter>
-                </Card>
-                        </motion.div>
+                  </div>
+                </div>
               ))
             ) : (
-                      <div className="text-center py-4 text-muted-foreground animate-fadeInUp">{t("No reviews yet")}</div>
-                    )
-                  }
+              <div className="text-center py-8 text-gray-500">{t("No reviews yet")}</div>
+            )}
           </div>
-              </motion.div>
         </DialogContent>
       </Dialog>
-        )}
-      </AnimatePresence>
     </div>
   )
 }
