@@ -306,7 +306,6 @@ class CustomUserForm(UserChangeForm):
                    'qr_code_view', 'qr_code_manage', 'qr_generate',
                    'account_view', 'account_manage']]
 
-@admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'role', 'status', 'is_employee', 'is_staff', 'is_superuser', 'is_active', 'get_permissions_count')
     list_filter = ('role', 'status', 'is_employee', 'is_staff', 'is_superuser', 'is_active')
@@ -318,11 +317,10 @@ class CustomUserAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
-        ('Permissions', {'fields': ('is_active', 'is_employee', 'is_staff', 'is_superuser', 'groups', 'custom_permissions')}),
+        ('Permissions', {'fields': ('is_active', 'is_employee', 'is_staff', 'is_superuser', 'groups')}),
         ('Important dates', {'fields': ('last_login', 'created_at')}),
         ('Role info', {'fields': ('role', 'status', 'created_by')}),
     )
-    filter_horizontal = ('custom_permissions',)
     
     def save_model(self, request, obj, form, change):
         """Override save to automatically assign permissions based on role"""
