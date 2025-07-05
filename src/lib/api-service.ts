@@ -155,6 +155,48 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// Add request interceptor to include auth token
+apiClient.interceptors.request.use(
+  (config) => {
+    // Prefer employee token if present, fallback to admin
+    const access = localStorage.getItem('employeeAccessToken') || localStorage.getItem('adminAccessToken');
+    if (access) {
+      config.headers.Authorization = `Bearer ${access}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor to handle token refresh
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        const newAccess = await refreshToken();
+        if (newAccess) {
+          originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+          return apiClient(originalRequest);
+        }
+      } catch (refreshError) {
+        logout();
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 // Fetch all tables from the API
 export const getTables = async () => {
   try {
