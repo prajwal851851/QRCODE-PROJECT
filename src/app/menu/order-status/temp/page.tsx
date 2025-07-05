@@ -82,13 +82,27 @@ export default function TempOrderStatusPage() {
   useEffect(() => {
     const transactionUuid = searchParams?.get('transaction_uuid') ?? ''
     const orderIdParam = searchParams?.get('orderId') ?? ''
+    const dataParam = searchParams?.get('data') ?? ''
     
     // Handle malformed URLs with double question marks (eSewa issue)
     let actualTransactionUuid = transactionUuid
+    
+    // If we have data parameter from eSewa, extract transaction_uuid from it
+    if (dataParam) {
+      try {
+        const decodedData = atob(dataParam)
+        const responseData = JSON.parse(decodedData)
+        actualTransactionUuid = responseData.transaction_uuid
+        console.log('Extracted transaction_uuid from eSewa data:', actualTransactionUuid)
+      } catch (error) {
+        console.error('Error parsing eSewa data:', error)
+      }
+    }
+    
+    // If still no transaction_uuid, try to extract from the full URL
     if (!actualTransactionUuid) {
-      // Try to extract from the full URL if searchParams didn't work
       const fullUrl = window.location.href
-      const transactionMatch = fullUrl.match(/transaction_uuid=([^&]+)/)
+      const transactionMatch = fullUrl.match(/transaction_uuid=([^&?]+)/)
       if (transactionMatch) {
         actualTransactionUuid = transactionMatch[1]
         console.log('Extracted transaction_uuid from malformed URL:', actualTransactionUuid)

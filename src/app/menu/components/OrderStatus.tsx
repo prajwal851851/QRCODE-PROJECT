@@ -88,6 +88,9 @@ export function OrderStatus({ orderId }: { orderId: string }) {
 
       const response = await fetch(`${getApiUrl()}/api/orders/${orderId}`)
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(`Order not found. Order ID: ${orderId}`)
+        }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
@@ -105,8 +108,8 @@ export function OrderStatus({ orderId }: { orderId: string }) {
         setIsRefreshing(false)
         if (!order) {
           setIsLoading(false)
-    }
-  }
+        }
+      }
     } finally {
       isFetchingRef.current = false
     }

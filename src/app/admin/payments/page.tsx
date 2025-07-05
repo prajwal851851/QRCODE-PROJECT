@@ -271,62 +271,81 @@ export default function PaymentsPage() {
     }).catch((err) => console.error("Failed to fetch CSRF token:", err));
   }, []);
 
-  // Modify the fetch extra charges effect
+  // Fetch extra charges on mount and when needed
   useEffect(() => {
-    if (csrfToken) {
-      setIsLoading(true);
-      const fetchCharges = async () => {
-        try {
-          const res = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/`, {
+    const fetchCharges = async () => {
+      try {
+        setIsLoading(true);
+        const res = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/`, {
+          method: 'GET',
+          headers: {
+            'X-CSRFToken': csrfToken,
+          },
+          credentials: 'include'
+        });
+
+        if (!res) {
+          // If request failed, retry once after a short delay
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const retryRes = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/`, {
             method: 'GET',
             headers: {
               'X-CSRFToken': csrfToken,
             },
             credentials: 'include'
           });
-
-          if (!res) {
-            // If request failed, retry once after a short delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const retryRes = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/`, {
-              method: 'GET',
-              headers: {
-                'X-CSRFToken': csrfToken,
-              },
-              credentials: 'include'
-            });
-            
-            if (!retryRes) {
-              setExtraCharges([]);
-              return;
-            }
-
-            if (!retryRes.ok) {
-              throw new Error('Failed to fetch extra charges');
-            }
-
-            const data = await retryRes.json();
-            setExtraCharges(Array.isArray(data) ? data : []);
+          
+          if (!retryRes) {
+            setExtraCharges([]);
             return;
           }
 
-          if (!res.ok) {
+          if (!retryRes.ok) {
             throw new Error('Failed to fetch extra charges');
           }
 
-          const data = await res.json();
+          const data = await retryRes.json();
           setExtraCharges(Array.isArray(data) ? data : []);
-        } catch (error) {
-          console.error('Error fetching extra charges:', error);
-          setExtraCharges([]);
-        } finally {
-          setIsLoading(false);
+          return;
         }
-      };
 
-      fetchCharges();
+        if (!res.ok) {
+          throw new Error('Failed to fetch extra charges');
+        }
+
+        const data = await res.json();
+        setExtraCharges(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error fetching extra charges:', error);
+        setExtraCharges([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Fetch charges on mount and when csrfToken is available
+    fetchCharges();
+  }, []); // Remove csrfToken dependency to make it more reliable
+
+  // Function to refresh extra charges
+  const refreshExtraCharges = async () => {
+    try {
+      const res = await makeAuthenticatedRequest(`${getApiUrl()}/api/extra-charges/`, {
+        method: 'GET',
+        headers: {
+          'X-CSRFToken': csrfToken,
+        },
+        credentials: 'include'
+      });
+
+      if (res && res.ok) {
+        const data = await res.json();
+        setExtraCharges(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error refreshing extra charges:', error);
     }
-  }, [csrfToken]);
+  };
 
   // Add a function to handle page visibility changes
   useEffect(() => {
@@ -336,6 +355,8 @@ export default function PaymentsPage() {
         if (accessToken && isTokenExpired(accessToken)) {
           await refreshAccessToken();
         }
+        // Refresh extra charges when page becomes visible
+        await refreshExtraCharges();
       }
     };
 
@@ -353,6 +374,8 @@ export default function PaymentsPage() {
       if (accessToken && isTokenExpired(accessToken)) {
         await refreshAccessToken();
       }
+      // Refresh extra charges when window gains focus
+      await refreshExtraCharges();
     };
 
     window.addEventListener('focus', handleFocus);
@@ -698,6 +721,7 @@ export default function PaymentsPage() {
       setExtraCharges(prev => [...prev, created]);
       setNewCharge({ label: '', amount: 0 });
       toast.success("Extra charge added successfully.");
+      refreshExtraCharges(); // Refresh charges after adding
     } catch (error) {
       console.error('Error adding charge:', error);
       toast.error("Failed to add extra charge. Please try again.");
@@ -730,6 +754,7 @@ export default function PaymentsPage() {
       if (!res.ok) throw new Error('Failed to remove charge');
       setExtraCharges(prev => prev.filter((_, i) => i !== idx));
       toast.success("Extra charge removed successfully.");
+      refreshExtraCharges(); // Refresh charges after removing
     } catch (error) {
       console.error('Error removing charge:', error);
       toast.error("Failed to remove extra charge. Please try again.");
@@ -1027,10 +1052,24 @@ export default function PaymentsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Extra Charges</CardTitle>
-          <CardDescription>
-            Manage extra charges like Service Fee, VAT, etc. These will be shown to customers during checkout.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Extra Charges</CardTitle>
+              <CardDescription>
+                Manage extra charges like Service Fee, VAT, etc. These will be shown to customers during checkout.
+              </CardDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshExtraCharges}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2 mb-4">

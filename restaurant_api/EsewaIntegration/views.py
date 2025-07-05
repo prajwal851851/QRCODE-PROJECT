@@ -198,10 +198,12 @@ def initiate_payment(request):
                 table_uid = data.get('tableUid', '')
             
             # For temporary orders, use transaction UUID in success URL
+            # Include transaction_uuid in the URL to avoid eSewa's malformed URL issue
             success_url = f'{frontend_base_url}/menu/order-status/temp?transaction_uuid={transaction_uuid}'
             failure_url = f'{frontend_base_url}/menu/payment-cancelled?transaction_uuid={transaction_uuid}&tableUid={table_uid}'
         else:
             # For existing orders, use order ID
+            # Include transaction_uuid in the URL to avoid eSewa's malformed URL issue
             success_url = f'{frontend_base_url}/menu/order-status/{order_id}?transaction_uuid={transaction_uuid}'
             table_uid = order.table.public_id if hasattr(order.table, 'public_id') else ''
             failure_url = f'{frontend_base_url}/menu/payment-cancelled?order_id={order_id}&tableUid={table_uid}'
