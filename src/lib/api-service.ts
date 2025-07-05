@@ -350,7 +350,15 @@ export async function fetchCategorizedMenuItems(): Promise<CategorizedMenuData> 
 export function logout() {
   localStorage.removeItem('adminAccessToken');
   localStorage.removeItem('adminRefreshToken');
+  localStorage.removeItem('adminUserData');
+  localStorage.removeItem('employeeAccessToken');
+  localStorage.removeItem('employeeRefreshToken');
+  localStorage.removeItem('employeeUserData');
   localStorage.setItem('showLogoutSpinner', 'true');
+  
+  // Dispatch custom event to notify components about user data change
+  window.dispatchEvent(new Event('userDataChanged'));
+  
   window.location.href = '/admin/login';
 }
 
@@ -364,11 +372,17 @@ export function logoutWithToast() {
   localStorage.removeItem('adminAccessToken');
   localStorage.removeItem('adminRefreshToken');
   localStorage.removeItem('adminUserData');
+  localStorage.removeItem('employeeAccessToken');
+  localStorage.removeItem('employeeRefreshToken');
+  localStorage.removeItem('employeeUserData');
   localStorage.removeItem('adminRememberMe');
   localStorage.setItem('showLogoutSpinner', 'true');
 
   // Show personalized toast notification (this will be handled by the calling component)
   // The toast should be called before this function
+  
+  // Dispatch custom event to notify components about user data change
+  window.dispatchEvent(new Event('userDataChanged'));
   
   // Redirect to login page
   window.location.href = '/admin/login';

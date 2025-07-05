@@ -21,22 +21,58 @@ export const usePermissions = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Load user data from localStorage on component mount
-  useEffect(() => {
+  // Function to load user data from localStorage
+  const loadUserData = () => {
     const storedUserData = localStorage.getItem("adminUserData");
+    const storedEmployeeData = localStorage.getItem("employeeUserData");
     
     if (storedUserData) {
       try {
         const parsedUserData = JSON.parse(storedUserData);
         setUserData(parsedUserData);
       } catch (error) {
-        console.error("Error parsing user data:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error parsing admin user data:", error);
+      }
+    } else if (storedEmployeeData) {
+      try {
+        const parsedEmployeeData = JSON.parse(storedEmployeeData);
+        setUserData(parsedEmployeeData);
+      } catch (error) {
+        console.error("Error parsing employee user data:", error);
       }
     } else {
-      setLoading(false);
+      setUserData(null);
     }
+    setLoading(false);
+  };
+
+  // Load user data from localStorage on component mount
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  // Listen for storage changes (when user logs in/out)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "adminUserData" || e.key === "employeeUserData") {
+        loadUserData();
+      }
+    };
+
+    // Listen for storage events from other tabs/windows
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also listen for custom events for same-tab updates
+    const handleCustomStorageChange = () => {
+      loadUserData();
+    };
+
+    window.addEventListener('userDataChanged', handleCustomStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userDataChanged', handleCustomStorageChange);
+    };
   }, []);
 
   // Check if user has specific permission

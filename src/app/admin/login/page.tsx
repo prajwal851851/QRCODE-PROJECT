@@ -131,8 +131,15 @@ export default function AdminLoginPage() {
 
         // Set a flag to show welcome toast on the welcome page
         localStorage.setItem("showWelcomeToast", "true");
-        // Redirect immediately to the welcome page (spinner stays until welcome page loads)
-        router.push("/admin/welcome");
+        
+        // Dispatch custom event to notify components about user data change
+        window.dispatchEvent(new Event('userDataChanged'));
+        
+        // Small delay to ensure data is properly stored and components are updated
+        setTimeout(() => {
+          // Redirect to the welcome page (spinner stays until welcome page loads)
+          router.push("/admin/welcome");
+        }, 100);
       } else {
         toast({
           title: "Login failed",
@@ -147,6 +154,9 @@ export default function AdminLoginPage() {
         description: "An error occurred during login",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
+      setShow(false)
     }
   }
 
