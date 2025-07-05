@@ -624,25 +624,41 @@ export default function PaymentsPage() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-10 w-10 sm:h-8 sm:w-8 touch-manipulation"
+                          onTouchStart={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="h-5 w-5 sm:h-4 sm:w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent 
+                        align="end" 
+                        className="z-50 min-w-[160px]"
+                        sideOffset={8}
+                      >
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
                           onClick={() => {
                             setSelectedPayment(payment)
                             setViewDetailsDialogOpen(true)
                           }}
+                          className="cursor-pointer"
                         >
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handlePrintReceipt(payment)}>
+                        <DropdownMenuItem 
+                          onClick={() => handlePrintReceipt(payment)}
+                          className="cursor-pointer"
+                        >
                           Print Receipt
                         </DropdownMenuItem>
                         {payment.status === "failed" && (
-                          <DropdownMenuItem onClick={() => handleRetryPayment(payment.id)}>
+                          <DropdownMenuItem 
+                            onClick={() => handleRetryPayment(payment.id)}
+                            className="cursor-pointer"
+                          >
                             <RefreshCw className="mr-2 h-4 w-4" /> Retry Payment
                           </DropdownMenuItem>
                         )}
@@ -652,14 +668,14 @@ export default function PaymentsPage() {
                               setSelectedPayment(payment)
                               setRefundDialogOpen(true)
                             }}
-                            className="text-red-600"
+                            className="cursor-pointer text-red-600"
                           >
                             Refund Payment
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem
                           onClick={() => handleDeletePayment(payment.id)}
-                          className="text-red-600"
+                          className="cursor-pointer text-red-600"
                         >
                           Delete
                         </DropdownMenuItem>
@@ -722,26 +738,42 @@ export default function PaymentsPage() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-10 w-10 sm:h-8 sm:w-8 touch-manipulation"
+                            onTouchStart={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-5 w-5 sm:h-4 sm:w-4" />
                             <span className="sr-only">Actions</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent 
+                          align="end" 
+                          className="z-50 min-w-[160px]"
+                          sideOffset={8}
+                        >
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem
                             onClick={() => {
                               setSelectedPayment(payment)
                               setViewDetailsDialogOpen(true)
                             }}
+                            className="cursor-pointer"
                           >
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePrintReceipt(payment)}>
+                          <DropdownMenuItem 
+                            onClick={() => handlePrintReceipt(payment)}
+                            className="cursor-pointer"
+                          >
                             Print Receipt
                           </DropdownMenuItem>
                           {payment.status === "failed" && (
-                            <DropdownMenuItem onClick={() => handleRetryPayment(payment.id)}>
+                            <DropdownMenuItem 
+                              onClick={() => handleRetryPayment(payment.id)}
+                              className="cursor-pointer"
+                            >
                               <RefreshCw className="mr-2 h-4 w-4" /> Retry Payment
                             </DropdownMenuItem>
                           )}
@@ -751,7 +783,7 @@ export default function PaymentsPage() {
                                 setSelectedPayment(payment)
                                 setRefundDialogOpen(true)
                               }}
-                              className="text-red-600"
+                              className="cursor-pointer text-red-600"
                             >
                               Refund Payment
                             </DropdownMenuItem>
@@ -759,7 +791,7 @@ export default function PaymentsPage() {
                           
                           <DropdownMenuItem
                             onClick={() => handleDeletePayment(payment.id)}
-                            className="text-red-600"
+                            className="cursor-pointer text-red-600"
                           >
                             Delete
                           </DropdownMenuItem>

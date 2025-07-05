@@ -925,22 +925,37 @@ export default function UsersPage() {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-10 w-10 sm:h-8 sm:w-8 touch-manipulation"
+                        onTouchStart={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal className="h-5 w-5 sm:h-4 sm:w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent 
+                      align="end" 
+                      className="z-50 min-w-[160px]"
+                      sideOffset={8}
+                    >
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => {
-                        setSelectedUser(user);
-                        setIsEditUserDialogOpen(true);
-                      }}>
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsEditUserDialogOpen(true);
+                        }}
+                        className="cursor-pointer"
+                      >
                         Edit User
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => {
-                        setUserToDelete(user);
-                        setIsDeleteDialogOpen(true);
-                      }}>
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          setUserToDelete(user);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                        className="cursor-pointer text-red-600"
+                      >
                         Delete User
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -1043,12 +1058,21 @@ export default function UsersPage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-10 w-10 sm:h-8 sm:w-8 touch-manipulation"
+                              onTouchStart={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="h-5 w-5 sm:h-4 sm:w-4 text-muted-foreground" />
                               <span className="sr-only">Actions for {user.username}</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-background border-border text-foreground">
+                          <DropdownMenuContent 
+                            align="end" 
+                            className="bg-background border-border text-foreground z-50 min-w-[160px]"
+                            sideOffset={8}
+                          >
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem
                               onClick={async () => {
