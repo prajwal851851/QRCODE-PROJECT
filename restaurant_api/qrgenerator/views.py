@@ -514,8 +514,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                 orders = orders.filter(created_at__date__gte=start_date)
             if end_date:
                 orders = orders.filter(created_at__date__lte=end_date)
-            # Total revenue (completed orders)
-            total_revenue = orders.filter(status='completed').aggregate(total=Sum('total'))['total'] or 0
+            # Total revenue (all paid orders, not just completed)
+            total_revenue = orders.filter(payment_status='paid').aggregate(total=Sum('total'))['total'] or 0
             # Total orders
             total_orders = orders.count()
             # Total customers (unique customer_name for completed orders)
@@ -588,8 +588,9 @@ class OrderViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 print(f"Error calculating table occupancy: {str(e)}")
                 table_occupancy_rate = 0
-            # Average order value
-            average_order_value = (total_revenue / total_orders) if total_orders else 0
+            # Average order value (based on paid orders)
+            paid_orders_count = orders.filter(payment_status='paid').count()
+            average_order_value = (total_revenue / paid_orders_count) if paid_orders_count else 0
             # Top customers
             top_customers = orders.filter(status='completed').exclude(customer_name__isnull=True).exclude(customer_name='').values('customer_name').annotate(count=Count('id'), revenue=Sum('total')).order_by('-revenue')[:5]
             # Add currency to top_customers revenue

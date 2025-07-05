@@ -641,8 +641,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* New Filter UI */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-6">
+      {/* Stats Cards */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Card className="flex flex-col min-h-[140px] w-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("Total Revenue")}</CardTitle>
@@ -692,45 +692,21 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">{t("Avg. Order Value")}</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-center">
-            <div className="p-4 rounded-lg border bg-card">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">{t("Average Order Value")}</p>
-                <div className="flex items-baseline justify-between">
-                  <p className="text-2xl font-bold">
-                    Rs {(() => {
-                      const value = stats.average_order_value;
-                      if (value === null || value === undefined) {
-                        return '0.00';
-                      }
-                      const cleanValue = String(value).replace('Rs', '').trim();
-                      const numValue = Number(cleanValue);
-                      if (isNaN(numValue)) {
-                        return '0.00';
-                      }
-                      return numValue.toFixed(2);
-                    })()}
-                  </p>
-                  <span className="text-sm text-muted-foreground">per order</span>
+            <div className="text-2xl font-bold">
+              Rs {(() => {
+                const value = stats.average_order_value;
+                if (value === null || value === undefined) {
+                  return '0.00';
+                }
+                const cleanValue = String(value).replace('Rs', '').trim();
+                const numValue = Number(cleanValue);
+                if (isNaN(numValue)) {
+                  return '0.00';
+                }
+                return numValue.toFixed(2);
+              })()}
             </div>
-                <p className="text-xs text-muted-foreground">
-                  {t("Based on")} {stats.total_orders || 0} {t("orders")}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t("Total Revenue")}: Rs {(() => {
-                    const revenue = stats.total_revenue;
-                    if (revenue === null || revenue === undefined) {
-                      return '0.00';
-                    }
-                    const cleanRevenue = String(revenue).replace('Rs', '').trim();
-                    const numRevenue = Number(cleanRevenue);
-                    if (isNaN(numRevenue)) {
-                      return '0.00';
-                    }
-                    return numRevenue.toFixed(2);
-                  })()}
-                </p>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground">{t("per order")}</p>
           </CardContent>
         </Card>
         <Card className="flex flex-col min-h-[140px] w-full">
@@ -743,8 +719,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <Card className="col-span-1 lg:col-span-4">
           <CardHeader>
             <CardTitle>{t("Recent Orders")}</CardTitle>
             <CardDescription>{t("Showing the last 5 orders")}</CardDescription>
@@ -782,7 +758,7 @@ export default function DashboardPage() {
             </Button>
           </CardFooter>
         </Card>
-        <Card className="col-span-3">
+        <Card className="col-span-1 lg:col-span-3">
           <CardHeader>
             <CardTitle>{t("Recent Activities")}</CardTitle>
             <CardDescription>{t("Latest order activities and status updates")}</CardDescription>
@@ -846,8 +822,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <Card className="col-span-1 lg:col-span-4">
           <CardHeader>
             <CardTitle>{t("Peak Hours Analysis")}</CardTitle>
             <CardDescription>{t("Busiest times in the last 30 days")}</CardDescription>
@@ -930,7 +906,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Card className="col-span-3">
+        <Card className="col-span-1 lg:col-span-3">
           <CardHeader>
             <CardTitle>{t("Table Performance")}</CardTitle>
             <CardDescription>{t("Most active tables in the last 30 days")}</CardDescription>
@@ -964,8 +940,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <Card className="col-span-1 lg:col-span-4">
           <CardHeader>
             <CardTitle>{t("Order Analytics")}</CardTitle>
             <CardDescription>{t("Key metrics and insights from your orders")}</CardDescription>
@@ -1081,7 +1057,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="col-span-3">
+        <Card className="col-span-1 lg:col-span-3">
           <CardHeader>
             <CardTitle>{t("Pending Actions")}</CardTitle>
           </CardHeader>
@@ -1111,8 +1087,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <Card className="col-span-1 lg:col-span-4">
           <CardHeader>
             <CardTitle>{t("Reviews Statistics")}</CardTitle>
           </CardHeader>
@@ -1200,7 +1176,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Card className="col-span-3">
+        <Card className="col-span-1 lg:col-span-3">
           <CardHeader>
             <CardTitle>{t("Popular Items")}</CardTitle>
             <CardDescription>{t("Most ordered items in the last 30 days")}</CardDescription>
