@@ -314,9 +314,15 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Internal server error.'}, status=500)
         
         # Allow any user (authenticated or not) to view order details
-        serializer = self.get_serializer(order)
-        print(f"[OrderViewSet] Returning order data: {serializer.data}")
-        return Response(serializer.data)
+        try:
+            serializer = self.get_serializer(order)
+            print(f"[OrderViewSet] Returning order data: {serializer.data}")
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"[OrderViewSet] Error serializing order: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({'detail': 'Internal server error.'}, status=500)
 
     def create(self, request, *args, **kwargs):
         print(f"[OrderViewSet] Received data: {request.data}")
