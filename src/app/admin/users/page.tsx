@@ -899,17 +899,71 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6 bg-background text-foreground px-2 sm:px-6 py-6">
+    <div className="space-y-6 bg-background text-foreground px-4 sm:px-6 py-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-        <div className="w-full sm:w-auto">
-          <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
-          <p className="text-muted-foreground">Manage your staff, roles, and permissions.</p>
+        <div className="w-full sm:w-auto text-center sm:text-left">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">User Management</h2>
+          <p className="text-muted-foreground text-sm sm:text-base">Manage your staff, roles, and permissions.</p>
         </div>
         <Button onClick={() => setIsAddUserDialogOpen(true)} className="w-full sm:w-auto">
           <UserPlus className="mr-2 h-4 w-4" /> Add User
         </Button>
       </div>
-      <Card>
+      
+      {/* Mobile Card View */}
+      <div className="block sm:hidden">
+        <div className="space-y-4">
+          {filteredUsers.map((user) => (
+            <Card key={user.id} className="p-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      {user.first_name || user.last_name ? `${user.first_name} ${user.last_name}`.trim() : user.username}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => {
+                        setSelectedUser(user);
+                        setIsEditUserDialogOpen(true);
+                      }}>
+                        Edit User
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setUserToDelete(user);
+                        setIsDeleteDialogOpen(true);
+                      }}>
+                        Delete User
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {getRoleBadge(user.role)}
+                  {getStatusBadge(user.status)}
+                </div>
+                
+                <div className="text-sm">
+                  <p><strong>Last Login:</strong> {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "Never"}</p>
+                  <p><strong>Permissions:</strong> {Object.values(user.permissions || {}).filter(Boolean).length} active</p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+      
+      {/* Desktop Table View */}
+      <Card className="hidden sm:block">
         <CardHeader>
           <CardTitle>Users</CardTitle>
           <CardDescription>View and manage all users in your system.</CardDescription>

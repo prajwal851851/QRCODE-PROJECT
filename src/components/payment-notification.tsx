@@ -333,7 +333,13 @@ export function PaymentNotificationSystem() {
       </Button>
       
       {showNotifications && (
-        <Card className="absolute right-0 mt-2 w-96 z-50 shadow-lg overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setShowNotifications(false)}
+          />
+          <Card className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 max-w-[90vw] z-50 shadow-lg overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
           <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900 flex justify-between items-center">
             <div className="flex gap-2">
               <Button variant={activeTab === 'payments' ? 'default' : 'ghost'} size="sm" onClick={() => setActiveTab('payments')} className="text-orange-600 dark:text-orange-400">
@@ -463,6 +469,7 @@ export function PaymentNotificationSystem() {
             </Button>
           </div>
         </Card>
+        </>
       )}
     </div>
   )
