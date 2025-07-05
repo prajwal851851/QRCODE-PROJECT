@@ -65,7 +65,7 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
       const orderDetails = {
         tableName,
           items: cartItems.map(item => ({
-            menuItemId: item.id.toString(),
+            id: item.id.toString(), // Use 'id' instead of 'menuItemId' to match backend expectations
             name: item.name,
           price: Number(item.price),
             quantity: item.quantity
@@ -173,68 +173,80 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
         await handleEsewaPayment()
       } else {
         // Cash payment: create order immediately and redirect
-      let tableId = Number(tableName)
-      if (isNaN(tableId)) {
-        const res = await fetch(`${getApiUrl()}/api/tables/?public_id=${tableName}`)
-        if (!res.ok) throw new Error('Failed to fetch table info')
-        const tables = await res.json()
-        if (!tables.length) throw new Error('Table not found')
-        tableId = tables[0].id
-      }
-      const formattedExtraCharges = extraCharges.map(charge => ({
-        label: charge.label,
-        amount: Number(charge.amount)
-      }))
-      
-      // Generate a unique transaction_uuid for cash payment
-      const transactionUuid = `cash-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      
-      const orderData = {
-        table: tableId,
-        items: cartItems.map(item => ({
-          menuItemId: item.id.toString(),
-          name: item.name,
+        console.log('Creating cash payment order for amount:', total)
+        
+        let tableId = Number(tableName)
+        if (isNaN(tableId)) {
+          const res = await fetch(`${getApiUrl()}/api/tables/?public_id=${tableName}`)
+          if (!res.ok) throw new Error('Failed to fetch table info')
+          const tables = await res.json()
+          if (!tables.length) throw new Error('Table not found')
+          tableId = tables[0].id
+        }
+        
+        const formattedExtraCharges = extraCharges.map(charge => ({
+          label: charge.label,
+          amount: Number(charge.amount)
+        }))
+        
+        // Generate a unique transaction_uuid for cash payment
+        const transactionUuid = `cash-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        
+        const orderData = {
+          table: tableId,
+          items: cartItems.map(item => ({
+            id: item.id.toString(), // Use 'id' instead of 'menuItemId' to match backend expectations
+            name: item.name,
             price: Number(item.price),
-          quantity: item.quantity
-        })),
-        customer_name: customerName,
-        special_instructions: specialInstructions,
-        dining_option: diningOption,
-        total: total,
+            quantity: item.quantity
+          })),
+          customer_name: customerName,
+          special_instructions: specialInstructions,
+          dining_option: diningOption,
+          total: total,
           payment_status: 'pending',
           payment_method: paymentMethod,
-        extra_charges_applied: formattedExtraCharges,
-        transaction_uuid: transactionUuid
-      }
+          extra_charges_applied: formattedExtraCharges,
+          transaction_uuid: transactionUuid
+        }
 
-      const data = await createOrderWithCheck(orderData)
-      console.log('Order creation response:', data)
-      const orderId = data.id || (data.order && data.order.id)
-      console.log('Extracted order ID:', orderId)
-      
-      if (!orderId) {
-        throw new Error('Failed to get order ID from response')
+        console.log('Creating order with data:', orderData)
+        
+        try {
+          const data = await createOrderWithCheck(orderData)
+          console.log('Order creation response:', data)
+          
+          // Extract order ID from response
+          const orderId = data.id || (data.order && data.order.id)
+          console.log('Extracted order ID:', orderId)
+          
+          if (!orderId) {
+            throw new Error('Failed to get order ID from response')
+          }
+          
+          // Clear cart and redirect to order status
+          setCartItems([])
+          onOrderPlaced()
+          onClose()
+          
+          // Redirect to order status page with both orderId and transaction_uuid
+          const tableUid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tableUid') : null
+          const redirectUrl = `/menu/order-status/${orderId}?transaction_uuid=${transactionUuid}&tableUid=${tableUid || ''}`
+          console.log('Redirecting to:', redirectUrl)
+          window.location.href = redirectUrl
+          
+        } catch (orderError) {
+          console.error('Error creating order:', orderError)
+          throw new Error(`Failed to create order: ${orderError instanceof Error ? orderError.message : 'Unknown error'}`)
+        }
       }
-      
-      // Redirect to order status page with tableUid and transaction_uuid
-      const tableUid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tableUid') : null;
-      let url = `/menu/order-status/${orderId}`;
-      if (tableUid) {
-        url += `?transaction_uuid=${transactionUuid}&tableUid=${tableUid}`;
-      } else {
-        url += `?transaction_uuid=${transactionUuid}`;
-      }
-      console.log('Redirecting to:', url)
-      onOrderPlaced();
-      router.push(url);
-  }
-    } catch (err) {
-      console.error('Error in handleSubmit:', err)
-      setError(err instanceof Error ? err.message : 'Failed to place order')
+    } catch (error) {
+      console.error('Payment error:', error)
+      setError(error instanceof Error ? error.message : "An error occurred during payment. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
-  };
+  }
 
   // Animation variants
   const fadeSlide = {

@@ -1,39 +1,71 @@
+#!/usr/bin/env python3
+"""
+Test script to verify order creation API
+"""
+
 import requests
 import json
+import time
 
-# Test data
-test_data = {
-    "table": 5,
-    "items": [
-        {
-            "name": "Test Item",
-            "price": 10.0,
-            "quantity": 1
-        }
-    ],
-    "total": 10.0,
-    "payment_status": "paid",
-    "payment_method": "esewa",
-    "transaction_uuid": "test-uuid-123"
-}
+# API base URL
+API_BASE_URL = "https://qrcode-project-3.onrender.com/api"
 
-# Test the API
-try:
-    response = requests.post(
-        "https://qrcode-project-3.onrender.com/api/orders/",
-        headers={"Content-Type": "application/json"},
-        data=json.dumps(test_data)
-    )
+def test_order_creation():
+    """Test order creation with cash payment"""
     
-    print(f"Status Code: {response.status_code}")
-    print(f"Response: {response.text}")
+    # Test order data
+    order_data = {
+        "table": 1,  # Assuming table ID 1 exists
+        "items": [
+            {
+                "id": "1",
+                "name": "Test Item",
+                "price": 100.0,
+                "quantity": 2
+            }
+        ],
+        "customer_name": "Test Customer",
+        "special_instructions": "Test instructions",
+        "dining_option": "dine-in",
+        "total": 200.0,
+        "payment_status": "pending",
+        "payment_method": "cash",
+        "extra_charges_applied": [],
+        "transaction_uuid": f"test-cash-{int(time.time())}"
+    }
     
-    if response.status_code == 400:
-        try:
-            error_data = response.json()
-            print(f"Error details: {json.dumps(error_data, indent=2)}")
-        except:
-            print("Could not parse error response as JSON")
+    print("Testing order creation...")
+    print(f"Order data: {json.dumps(order_data, indent=2)}")
+    
+    try:
+        # Create order
+        response = requests.post(f"{API_BASE_URL}/orders/", json=order_data)
+        print(f"Response status: {response.status_code}")
+        print(f"Response headers: {dict(response.headers)}")
+        
+        if response.status_code == 200 or response.status_code == 201:
+            order_response = response.json()
+            print(f"Order created successfully: {json.dumps(order_response, indent=2)}")
             
-except Exception as e:
-    print(f"Error: {e}") 
+            # Try to fetch the created order
+            order_id = order_response.get('id')
+            if order_id:
+                print(f"Testing order retrieval for ID: {order_id}")
+                fetch_response = requests.get(f"{API_BASE_URL}/orders/{order_id}")
+                print(f"Fetch response status: {fetch_response.status_code}")
+                
+                if fetch_response.status_code == 200:
+                    fetched_order = fetch_response.json()
+                    print(f"Order retrieved successfully: {json.dumps(fetched_order, indent=2)}")
+                else:
+                    print(f"Failed to fetch order: {fetch_response.text}")
+            else:
+                print("No order ID in response")
+        else:
+            print(f"Failed to create order: {response.text}")
+            
+    except Exception as e:
+        print(f"Error testing order creation: {e}")
+
+if __name__ == "__main__":
+    test_order_creation() 

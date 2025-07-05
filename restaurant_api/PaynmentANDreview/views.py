@@ -33,15 +33,27 @@ class ReviewCreateView(generics.CreateAPIView):
 
 class ReviewListView(generics.ListAPIView):
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_permissions(self):
+        # Allow unauthenticated access for checking existing reviews
+        return [permissions.AllowAny()]
 
     def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, 'is_employee') and user.is_employee and user.created_by:
-            admin_user = user.created_by
+        # If user is authenticated, filter by user
+        if self.request.user.is_authenticated:
+            user = self.request.user
+            if hasattr(user, 'is_employee') and user.is_employee and user.created_by:
+                admin_user = user.created_by
+            else:
+                admin_user = user
+            return Review.objects.filter(order__user=admin_user)
         else:
-            admin_user = user
-        return Review.objects.filter(order__user=admin_user)
+            # For unauthenticated users, allow checking reviews by order ID
+            order_id = self.request.query_params.get('order')
+            if order_id:
+                return Review.objects.filter(order__id=order_id)
+            # If no order ID provided, return empty queryset for unauthenticated users
+            return Review.objects.none()
 
 class ReviewDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = ReviewSerializer
