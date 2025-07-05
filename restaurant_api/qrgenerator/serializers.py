@@ -27,7 +27,7 @@ class OrderItemSerializer(serializers.Serializer):
         return data
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = serializers.SerializerMethodField()
+    items = serializers.JSONField()  # Make items writable
     table_name = serializers.CharField(source='table.name', read_only=True)
     total = serializers.DecimalField(max_digits=10, decimal_places=2)
     table = serializers.PrimaryKeyRelatedField(queryset=Table.objects.all(), required=False)
@@ -42,41 +42,75 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
-    def get_items(self, obj):
-        """Custom method to handle items serialization with error handling"""
-        try:
-            if not obj.items:
-                return []
-            
-            # Ensure each item has the required fields
-            processed_items = []
-            for item in obj.items:
-                if isinstance(item, dict):
-                    processed_item = {
-                        'id': item.get('id', str(item.get('name', 'Unknown Item'))),
-                        'name': item.get('name', 'Unknown Item'),
-                        'price': float(item.get('price', 0)),
-                        'quantity': int(item.get('quantity', 1))
-                    }
-                    processed_items.append(processed_item)
-                else:
-                    # If item is not a dict, skip it
-                    continue
-            
-            return processed_items
-        except Exception as e:
-            print(f"Error processing items for order {obj.id}: {str(e)}")
-            return []
+
 
     def validate_items(self, items):
         if not items:
             raise serializers.ValidationError("At least one item is required")
+        
+        # Ensure items is a list
+        if not isinstance(items, list):
+            raise serializers.ValidationError("Items must be a list")
+        
+        # Validate each item
+        for i, item in enumerate(items):
+            if not isinstance(item, dict):
+                raise serializers.ValidationError(f"Item {i} must be an object")
+            
+            # Ensure required fields exist
+            if not item.get('name'):
+                raise serializers.ValidationError(f"Item {i} must have a name")
+            
+            # Ensure price is a valid number
+            try:
+                price = float(item.get('price', 0))
+                if price < 0:
+                    raise serializers.ValidationError(f"Item {i} price cannot be negative")
+            except (ValueError, TypeError):
+                raise serializers.ValidationError(f"Item {i} must have a valid price")
+            
+            # Ensure quantity is a valid positive integer
+            try:
+                quantity = int(item.get('quantity', 1))
+                if quantity <= 0:
+                    raise serializers.ValidationError(f"Item {i} quantity must be positive")
+            except (ValueError, TypeError):
+                raise serializers.ValidationError(f"Item {i} must have a valid quantity")
+        
         return items
 
     def validate_total(self, total):
         if total <= 0:
             raise serializers.ValidationError("Total must be greater than zero")
         return total
+
+    def to_representation(self, instance):
+        """Custom representation to ensure items are properly formatted"""
+        data = super().to_representation(instance)
+        
+        # Ensure items are properly formatted when reading
+        if 'items' in data and data['items']:
+            try:
+                processed_items = []
+                for item in data['items']:
+                    if isinstance(item, dict):
+                        processed_item = {
+                            'id': item.get('id', str(item.get('name', 'Unknown Item'))),
+                            'name': item.get('name', 'Unknown Item'),
+                            'price': float(item.get('price', 0)),
+                            'quantity': int(item.get('quantity', 1))
+                        }
+                        processed_items.append(processed_item)
+                    else:
+                        continue
+                data['items'] = processed_items
+            except Exception as e:
+                print(f"Error processing items for order {instance.id}: {str(e)}")
+                data['items'] = []
+        else:
+            data['items'] = []
+        
+        return data
 
 class MenuItemSerializer(serializers.ModelSerializer):
     discount_percentage = serializers.SerializerMethodField()
