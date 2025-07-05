@@ -8,7 +8,7 @@ class TableSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'qr_code_url', 'section', 'size', 'active', 'created_at', 'updated_at', 'public_id']
 
 class OrderItemSerializer(serializers.Serializer):
-    id = serializers.CharField()  # Use 'id' as the primary field
+    id = serializers.CharField(required=False, allow_blank=True)  # Make id optional
     name = serializers.CharField()
     price = serializers.FloatField()
     quantity = serializers.IntegerField()
@@ -21,8 +21,9 @@ class OrderItemSerializer(serializers.Serializer):
             raise serializers.ValidationError("Item price is required")
         if data.get('quantity') is None:
             raise serializers.ValidationError("Item quantity is required")
+        # Make id optional - if not provided, we'll use a default value
         if not data.get('id'):
-            raise serializers.ValidationError("Item ID is required")
+            data['id'] = str(data.get('name', ''))  # Use name as fallback id
         return data
 
 class OrderSerializer(serializers.ModelSerializer):

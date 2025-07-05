@@ -496,10 +496,14 @@ class OrderViewSet(viewsets.ModelViewSet):
             active_tables = Table.objects.filter(user=admin_user, active=True).count()
             inactive_tables = Table.objects.filter(user=admin_user, active=False).count()
             # Recent orders
-            recent_orders = OrderSerializer(orders.order_by('-created_at')[:5], many=True).data
-            # Add currency to recent_orders
-            for o in recent_orders:
-                o['total'] = f"Rs {o['total']}"
+            try:
+                recent_orders = OrderSerializer(orders.order_by('-created_at')[:5], many=True).data
+                # Add currency to recent_orders
+                for o in recent_orders:
+                    o['total'] = f"Rs {o['total']}"
+            except Exception as e:
+                print(f"Error serializing recent orders: {str(e)}")
+                recent_orders = []
             # Revenue overview (monthly for last 12 months)
             today = timezone.now().date()
             months = []
@@ -514,8 +518,13 @@ class OrderViewSet(viewsets.ModelViewSet):
             # Most ordered item (aggregate from items JSON field)
             item_counter = Counter()
             for order in orders:
-                for item in order.items:
-                    item_counter[item.get('name')] += item.get('quantity', 1)
+                try:
+                    for item in order.items:
+                        if isinstance(item, dict) and item.get('name'):
+                            item_counter[item.get('name')] += item.get('quantity', 1)
+                except Exception as e:
+                    print(f"Error processing items for order {order.id}: {str(e)}")
+                    continue
             most_ordered_item = None
             if item_counter:
                 name, count = item_counter.most_common(1)[0]
@@ -529,19 +538,28 @@ class OrderViewSet(viewsets.ModelViewSet):
             for weekday in range(7):
                 heatmap[calendar.day_name[weekday]] = [0]*24
             for o in orders:
-                dt = o.created_at
-                heatmap[calendar.day_name[dt.weekday()]][dt.hour] += 1
+                try:
+                    dt = o.created_at
+                    heatmap[calendar.day_name[dt.weekday()]][dt.hour] += 1
+                except Exception as e:
+                    print(f"Error processing heatmap for order {o.id}: {str(e)}")
+                    continue
             # Table occupancy rate (approximate)
             total_table_time = 0
             occupied_time = 0
-            for t in Table.objects.filter(user=admin_user):
-                table_orders = orders.filter(table=t)
-                if table_orders.exists():
-                    times = list(table_orders.order_by('created_at').values_list('created_at', flat=True))
-                    total_table_time += (timezone.now() - times[0]).total_seconds()
-                    for i in range(1, len(times)):
-                        occupied_time += (times[i] - times[i-1]).total_seconds()
-            table_occupancy_rate = (occupied_time / total_table_time * 100) if total_table_time else 0
+            try:
+                for t in Table.objects.filter(user=admin_user):
+                    table_orders = orders.filter(table=t)
+                    if table_orders.exists():
+                        times = list(table_orders.order_by('created_at').values_list('created_at', flat=True))
+                        if times:
+                            total_table_time += (timezone.now() - times[0]).total_seconds()
+                            for i in range(1, len(times)):
+                                occupied_time += (times[i] - times[i-1]).total_seconds()
+                table_occupancy_rate = (occupied_time / total_table_time * 100) if total_table_time else 0
+            except Exception as e:
+                print(f"Error calculating table occupancy: {str(e)}")
+                table_occupancy_rate = 0
             # Average order value
             average_order_value = (total_revenue / total_orders) if total_orders else 0
             # Top customers
@@ -552,9 +570,13 @@ class OrderViewSet(viewsets.ModelViewSet):
             # Order status breakdown
             status_breakdown = orders.values('status').annotate(count=Count('id'))
             # Pending actions
-            pending_actions = OrderSerializer(orders.filter(status__in=['pending', 'in-progress']).order_by('-created_at')[:5], many=True).data
-            for o in pending_actions:
-                o['total'] = f"Rs {o['total']}"
+            try:
+                pending_actions = OrderSerializer(orders.filter(status__in=['pending', 'in-progress']).order_by('-created_at')[:5], many=True).data
+                for o in pending_actions:
+                    o['total'] = f"Rs {o['total']}"
+            except Exception as e:
+                print(f"Error serializing pending actions: {str(e)}")
+                pending_actions = []
             # Feedback overview (if available)
             feedback_overview = None
             # Inventory alerts (if inventory tracked)
