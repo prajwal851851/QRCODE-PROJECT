@@ -158,6 +158,7 @@ export default function OrdersPage() {
       
       setOrders(uniqueOrders)
       setLastUpdated(new Date())
+      setHasFetched(true) // Mark as fetched to stop loading spinner
     } catch (error) {
       console.error('[Admin Orders] Error fetching orders:', error)
       toast({
@@ -165,6 +166,7 @@ export default function OrdersPage() {
         description: "Failed to fetch orders",
         variant: "destructive"
       })
+      setHasFetched(true) // Mark as fetched even on error to stop loading spinner
     } finally {
       isFetchingRef.current = false
       setIsRefreshing(false)
