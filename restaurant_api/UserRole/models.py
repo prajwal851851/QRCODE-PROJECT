@@ -63,6 +63,15 @@ class CustomUser(AbstractUser):
     created_by = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='created_users')
 
     def save(self, *args, **kwargs):
+        # Store the original role to check if it changed
+        original_role = None
+        if self.pk:
+            try:
+                original_user = CustomUser.objects.get(pk=self.pk)
+                original_role = original_user.role
+            except CustomUser.DoesNotExist:
+                pass
+        
         # Only set super_admin role for the first user in the system
         if not self.pk and not CustomUser.objects.exists():
             self.role = UserRoleChoices.SUPER_ADMIN
@@ -85,6 +94,64 @@ class CustomUser(AbstractUser):
             self.is_employee = False
         # --- END FORCE ---
         super().save(*args, **kwargs)
+        
+        # Assign permissions based on role (only if role changed or user is new)
+        if not self.pk or original_role != self.role:
+            self._assign_role_permissions()
+    
+    def _assign_role_permissions(self):
+        """Assign permissions based on user role"""
+        try:
+            # Define role-to-permission mappings
+            role_permissions = {
+                UserRoleChoices.SUPER_ADMIN: [
+                    'menu_view', 'menu_edit', 'orders_view', 'orders_manage',
+                    'customers_view', 'customers_manage', 'users_view', 'users_manage',
+                    'inventory_view', 'inventory_edit', 'inventory_manage', 'inventory_alerts',
+                    'reports_view', 'reports_export', 'settings_view', 'settings_edit',
+                    'qr_code_view', 'qr_code_manage', 'qr_generate', 'account_view', 'account_manage'
+                ],
+                UserRoleChoices.ADMIN: [
+                    'menu_view', 'menu_edit', 'orders_view', 'orders_manage',
+                    'customers_view', 'customers_manage', 'users_view', 'users_manage',
+                    'inventory_view', 'inventory_edit', 'inventory_manage', 'inventory_alerts',
+                    'reports_view', 'reports_export', 'settings_view', 'settings_edit',
+                    'qr_code_view', 'qr_code_manage', 'qr_generate', 'account_view', 'account_manage'
+                ],
+                UserRoleChoices.MENU_MANAGER: [
+                    'menu_view', 'menu_edit', 'orders_view', 'inventory_view'
+                ],
+                UserRoleChoices.ORDER_MANAGER: [
+                    'orders_view', 'orders_manage', 'customers_view', 'reports_view'
+                ],
+                UserRoleChoices.CUSTOMER_SUPPORT: [
+                    'customers_view', 'customers_manage', 'orders_view'
+                ],
+                UserRoleChoices.QR_CODE_MANAGER: [
+                    'qr_code_view', 'qr_code_manage', 'qr_generate', 'tables_view', 'tables_manage'
+                ],
+                UserRoleChoices.ACCOUNT_MANAGER: [
+                    'account_view', 'account_manage', 'reports_view', 'reports_export'
+                ],
+                UserRoleChoices.INVENTORY_MANAGER: [
+                    'inventory_view', 'inventory_edit', 'inventory_manage', 'inventory_alerts'
+                ],
+            }
+            
+            # Get permissions for this role
+            role_perms = role_permissions.get(self.role, [])
+            
+            if role_perms:
+                # Get permission objects
+                permissions = Permission.objects.filter(id__in=role_perms)
+                
+                # Clear existing permissions and assign new ones
+                self.custom_permissions.clear()
+                self.custom_permissions.add(*permissions)
+                
+                print(f"Assigned {permissions.count()} permissions to user {self.username} (Role: {self.role})")
+        except Exception as e:
+            print(f"Error assigning permissions to user {self.username}: {str(e)}")
 
     def __str__(self):
         return f"{self.username} ({self.email})"
