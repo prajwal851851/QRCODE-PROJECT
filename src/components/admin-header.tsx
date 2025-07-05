@@ -189,11 +189,6 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
   return (
     <header className="h-16 px-4 border-b flex items-center justify-between bg-white dark:bg-gray-950 dark:border-gray-800">
       <div className="flex items-center gap-4">
-        {onMenuClick && (
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
-            <Menu className="h-5 w-5" />
-          </Button>
-        )}
         <h1 className="text-xl font-bold hidden md:block dark:text-white">{title}</h1>
         <div className="relative hidden md:flex items-center">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />

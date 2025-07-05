@@ -350,7 +350,7 @@ export function ResponsiveAdminSidebar({ children }: SidebarProps) {
 
       {/* Content */}
       <div className="md:pl-64 flex flex-col flex-1">
-        <AdminHeader title={pageTitle} onMenuClick={() => setOpen(true)} />
+        <AdminHeader title={pageTitle} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
     </div>
