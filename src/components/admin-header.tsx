@@ -166,23 +166,30 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
       setChangePwError('New passwords do not match.');
       return;
     }
-            const res = await fetchWithAuth(getApiUrl() + '/authentaction/change-password/', {
-      method: 'POST',
-      body: JSON.stringify({
-        current_password: pwForm.current,
-        new_password: pwForm.new,
-      }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setChangePwSuccess('Password changed successfully.');
-      setPwForm({ current: '', new: '', confirm: '' });
-      setTimeout(() => {
-        setShowChangePassword(false);
-        handleLogout(); // Force logout after password change
-      }, 1500);
-    } else {
-      setChangePwError(data.error || 'Failed to change password.');
+    setShow(true); // Show global spinner
+    try {
+      const res = await fetchWithAuth(getApiUrl() + '/authentaction/change-password/', {
+        method: 'POST',
+        body: JSON.stringify({
+          current_password: pwForm.current,
+          new_password: pwForm.new,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setChangePwSuccess('Password changed successfully.');
+        setPwForm({ current: '', new: '', confirm: '' });
+        setTimeout(() => {
+          setShowChangePassword(false);
+          handleLogout(); // Force logout after password change
+        }, 1500);
+      } else {
+        setChangePwError(data.error || 'Failed to change password.');
+      }
+    } catch (error) {
+      setChangePwError('Failed to change password.');
+    } finally {
+      setShow(false); // Hide global spinner
     }
   }
 
