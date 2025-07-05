@@ -88,12 +88,7 @@ export function AdminSidebar() {
       path: "/admin/inventory",
       permissions: ["inventory_view", "inventory_manage"],
     },
-    {
-      name: "Table Management",
-      icon: Table,
-      path: "/admin/tables",
-      permissions: ["tables_manage"],
-    },
+
     {
       name: "Orders",
       icon: ShoppingCart,

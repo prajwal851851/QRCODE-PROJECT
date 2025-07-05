@@ -69,15 +69,7 @@ export default function WelcomePage() {
       color: "bg-green-100 dark:bg-green-900/20",
       textColor: "text-green-800 dark:text-green-300",
     },
-    {
-      name: "Tables",
-      description: "Manage restaurant tables and seating",
-      icon: BarChart3,
-      link: "/admin/tables",
-      permissions: ["tables_manage"],
-      color: "bg-amber-100 dark:bg-amber-900/20",
-      textColor: "text-amber-800 dark:text-amber-300",
-    },
+
     {
       name: "Payments",
       description: "View and process customer payments",

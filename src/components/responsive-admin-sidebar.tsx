@@ -93,13 +93,7 @@ export function ResponsiveAdminSidebar({ children }: SidebarProps) {
       active: pathname === "/admin/inventory",
       permissions: ["inventory_view", "inventory_manage"],
     },
-    /*{
-      label: "Tables",
-      icon: BarChart3,
-      href: "/admin/tables",
-      active: pathname === "/admin/tables",
-      permissions: ["tables_manage"],
-    },*/
+
     {
       label: "Payments",
       icon: CreditCard,
