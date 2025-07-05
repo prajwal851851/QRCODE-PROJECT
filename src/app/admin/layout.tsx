@@ -81,7 +81,7 @@ export default function AdminLayout({
       setChangePwError('New passwords do not match.')
       return
     }
-    const res = await fetchWithAuth(getApiUrl() + 'authentaction/change-password/', {
+            const res = await fetchWithAuth(getApiUrl() + '/authentaction/change-password/', {
       method: 'POST',
       body: JSON.stringify({
         current_password: pwForm.current,

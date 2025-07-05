@@ -166,7 +166,7 @@ export function AdminHeader({ onMenuClick, title = "Dashboard" }: AdminHeaderPro
       setChangePwError('New passwords do not match.');
       return;
     }
-    const res = await fetchWithAuth(getApiUrl() + 'authentaction/change-password/', {
+            const res = await fetchWithAuth(getApiUrl() + '/authentaction/change-password/', {
       method: 'POST',
       body: JSON.stringify({
         current_password: pwForm.current,

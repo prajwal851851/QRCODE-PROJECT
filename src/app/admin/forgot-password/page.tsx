@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
     setShow(true)
     try {
-      const response = await fetch(getApiUrl() + "authentaction/forgot-password/", {
+      const response = await fetch(getApiUrl() + "/authentaction/forgot-password/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
     setShow(true)
     try {
-      const response = await fetch(getApiUrl() + "authentaction/reset-password/", {
+      const response = await fetch(getApiUrl() + "/authentaction/reset-password/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp, new_password: newPassword }),
