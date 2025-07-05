@@ -155,7 +155,10 @@ export default function TempOrderStatusPage() {
             
             const orderData = {
               table: tableId,
-              items: orderDetails.items,
+              items: orderDetails.items.map((item: any) => ({
+                ...item,
+                id: item.id ? item.id.toString() : '', // Ensure id is present and string
+              })),
               customer_name: orderDetails.customer_name,
               special_instructions: orderDetails.special_instructions,
               dining_option: orderDetails.dining_option,

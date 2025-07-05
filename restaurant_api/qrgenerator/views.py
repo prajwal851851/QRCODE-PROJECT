@@ -467,16 +467,17 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def dashboard_full_stats(self, request):
-        from django.db.models import Sum, Count, F, Q
-        from django.utils import timezone
-        import datetime
-        import calendar
-        from collections import Counter
-        user = request.user
-        if hasattr(user, 'is_employee') and user.is_employee and user.created_by:
-            admin_user = user.created_by
-        else:
-            admin_user = user
+        try:
+            from django.db.models import Sum, Count, F, Q
+            from django.utils import timezone
+            import datetime
+            import calendar
+            from collections import Counter
+            user = request.user
+            if hasattr(user, 'is_employee') and user.is_employee and user.created_by:
+                admin_user = user.created_by
+            else:
+                admin_user = user
         # Date range filter
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
@@ -490,7 +491,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Total orders
         total_orders = orders.count()
         # Total customers (unique customer_name for completed orders)
-        total_customers = orders.filter(status='completed').values('customer_name').distinct().count()
+        total_customers = orders.filter(status='completed').exclude(customer_name__isnull=True).exclude(customer_name='').values('customer_name').distinct().count()
         # Active/inactive tables
         active_tables = Table.objects.filter(user=admin_user, active=True).count()
         inactive_tables = Table.objects.filter(user=admin_user, active=False).count()
@@ -533,7 +534,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Table occupancy rate (approximate)
         total_table_time = 0
         occupied_time = 0
-        for t in Table.objects.filter(user=request.user):
+        for t in Table.objects.filter(user=admin_user):
             table_orders = orders.filter(table=t)
             if table_orders.exists():
                 times = list(table_orders.order_by('created_at').values_list('created_at', flat=True))
@@ -544,7 +545,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Average order value
         average_order_value = (total_revenue / total_orders) if total_orders else 0
         # Top customers
-        top_customers = orders.filter(status='completed').values('customer_name').annotate(count=Count('id'), revenue=Sum('total')).order_by('-revenue')[:5]
+        top_customers = orders.filter(status='completed').exclude(customer_name__isnull=True).exclude(customer_name='').values('customer_name').annotate(count=Count('id'), revenue=Sum('total')).order_by('-revenue')[:5]
         # Add currency to top_customers revenue
         for c in top_customers:
             c['revenue'] = f"Rs {c['revenue']}"
@@ -578,16 +579,27 @@ class OrderViewSet(viewsets.ModelViewSet):
             'feedback_overview': feedback_overview,
             'inventory_alerts': inventory_alerts,
         })
+        except Exception as e:
+            print(f"Error in dashboard_full_stats: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({'error': str(e)}, status=500)
 
     def list(self, request, *args, **kwargs):
-        # Use the shared get_queryset logic for both admin and employee (team linkage)
-        queryset = self.get_queryset()
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        try:
+            # Use the shared get_queryset logic for both admin and employee (team linkage)
+            queryset = self.get_queryset()
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"Error in OrderViewSet.list: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({'error': str(e)}, status=500)
 
     @action(detail=False, methods=['delete'])
     def delete_all(self, request):

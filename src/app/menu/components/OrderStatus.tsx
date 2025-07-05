@@ -141,6 +141,10 @@ export function OrderStatus({ orderId }: { orderId: string }) {
       // Use the new function with duplicate check
       const data = await createOrderWithCheck({
         ...orderDetails,
+        items: orderDetails.items.map((item: any) => ({
+          ...item,
+          id: item.id ? item.id.toString() : '', // Ensure id is present and string
+        })),
         transaction_uuid: transactionUuid
       });
         
