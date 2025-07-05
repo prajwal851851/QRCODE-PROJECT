@@ -340,7 +340,7 @@ export async function refreshToken() {
   }
 
   try {
-    const response = await fetch(`${getApiUrl()}/authentaction/token/refresh/`, {
+    const response = await fetch(`${getApiUrl()}/api/authentaction/token/refresh/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh }),

@@ -184,7 +184,7 @@ export default function PaymentsPage() {
         return null;
       }
 
-      const response = await fetch(`${getApiUrl()}/authentaction/token/refresh/`, {
+      const response = await fetch(`${getApiUrl()}/api/authentaction/token/refresh/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ export default function PaymentsPage() {
 
       if (!response.ok) {
         // Try to get new tokens
-        const newTokensResponse = await fetch(`${getApiUrl()}/authentaction/token/`, {
+        const newTokensResponse = await fetch(`${getApiUrl()}/api/authentaction/token/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -28,7 +28,7 @@ export default function InventoryCategoriesPage() {
     setError(null)
     try {
       const token = localStorage.getItem("adminAccessToken")
-      const res = await fetch(`${getApiUrl()}/inventory/categories/`, {
+      const res = await fetch(`${getApiUrl()}/api/inventory/categories/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) throw new Error("Failed to fetch categories")
@@ -69,8 +69,8 @@ export default function InventoryCategoriesPage() {
     try {
       const res = await fetch(
         editingCategory
-          ? `${getApiUrl()}/inventory/categories/${editingCategory.id}/`
-          : `${getApiUrl()}/inventory/categories/`,
+          ? `${getApiUrl()}/api/inventory/categories/${editingCategory.id}/`
+          : `${getApiUrl()}/api/inventory/categories/`,
         {
           method: editingCategory ? "PUT" : "POST",
           headers: {
@@ -92,7 +92,7 @@ export default function InventoryCategoriesPage() {
     if (!window.confirm(`Delete category "${cat.name}"?`)) return
     const token = localStorage.getItem("adminAccessToken")
     try {
-      const res = await fetch(`${getApiUrl()}/inventory/categories/${cat.id}/`, {
+      const res = await fetch(`${getApiUrl()}/api/inventory/categories/${cat.id}/`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -157,4 +157,4 @@ export default function InventoryCategoriesPage() {
       </Dialog>
     </div>
   )
-} 
+}

@@ -22,10 +22,10 @@ export default function WaiterCallNotification({ showResolve = false, orderId }:
   // Poll waiter calls
   const fetchWaiterCalls = async () => {
     try {
-      let url = `${getApiUrl()}/waiter_call/active/`;
+      let url = `${getApiUrl()}/api/waiter_call/active/`;
       // If orderId is provided, fetch the order to get table_id
       if (orderId) {
-        const orderRes = await fetch(`${getApiUrl()}/orders/${orderId}/`);
+        const orderRes = await fetch(`${getApiUrl()}/api/orders/${orderId}/`);
         if (!orderRes.ok) return;
         const orderData = await orderRes.json();
         const tableId = orderData.table || orderData.table_id;
@@ -49,7 +49,7 @@ export default function WaiterCallNotification({ showResolve = false, orderId }:
 
   const resolveWaiterCall = async (id: number) => {
     try {
-      const res = await fetch(`${getApiUrl()}/waiter_call/${id}/resolve/`, { method: "POST" });
+      const res = await fetch(`${getApiUrl()}/api/waiter_call/${id}/resolve/`, { method: "POST" });
       if (res.ok) {
         setWaiterCalls((prev) => prev.filter((c) => c.id !== id));
       }
