@@ -34,7 +34,7 @@ export default function OrderStatusPage({ params }: { params: { orderId: string 
       setIsRefreshing(isManualRefresh)
       setFetchError(null)
 
-      const response = await fetch(getApiUrl() + `/api/orders/${params.orderId}`)
+      const response = await fetch(getApiUrl() + `/api/orders/${params.orderId}/`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

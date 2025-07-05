@@ -86,17 +86,34 @@ export function OrderStatus({ orderId }: { orderId: string }) {
       setIsRefreshing(isManualRefresh)
       setFetchError(null)
 
-      const response = await fetch(`${getApiUrl()}/api/orders/${orderId}`)
+      console.log('Fetching order with ID:', orderId)
+      const response = await fetch(`${getApiUrl()}/api/orders/${orderId}/`)
+      
       if (!response.ok) {
+        if (response.status === 404) {
+          console.error(`Order not found with ID: ${orderId}`)
+          throw new Error(`Order not found. Order ID: ${orderId}`)
+        }
+        const errorText = await response.text()
+        console.error(`HTTP error ${response.status}:`, errorText)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
+      
       const data = await response.json()
+      console.log('Order data received:', data)
+      console.log('Order data type:', typeof data)
+      console.log('Order data keys:', Object.keys(data))
+      console.log('Order ID from response:', data.id)
+      console.log('Order status from response:', data.status)
+      console.log('Order payment_status from response:', data.payment_status)
+      console.log('Order total from response:', data.total)
       
       if (mountedRef.current) {
         setOrder(data)
         setLastUpdated(new Date())
         setIsLoading(false)
         setIsRefreshing(false)
+        console.log('Order state updated successfully')
       }
     } catch (error) {
       console.error('Error fetching order:', error)
@@ -105,8 +122,8 @@ export function OrderStatus({ orderId }: { orderId: string }) {
         setIsRefreshing(false)
         if (!order) {
           setIsLoading(false)
-    }
-  }
+        }
+      }
     } finally {
       isFetchingRef.current = false
     }
@@ -156,12 +173,50 @@ export function OrderStatus({ orderId }: { orderId: string }) {
     };
 
   useEffect(() => {
+    mountedRef.current = true
+    
+    // Initial order fetch
+    if (orderId) {
+      console.log('Component mounted, fetching order with ID:', orderId)
+      fetchOrder()
+    }
+    
+    return () => {
+      mountedRef.current = false
+    }
+  }, [orderId])
+
+  useEffect(() => {
     if (transactionUuid) {
+      console.log('Transaction UUID detected:', transactionUuid)
       if (transactionUuid.startsWith('cash-')) {
-        // Skip eSewa verification for cash payments, just fetch the order
-                fetchOrder();
-          } else {
-      fetch(`${getApiUrl()}/api/payments/esewa/verify/?transaction_uuid=${transactionUuid}`)
+        // For cash payments, try to fetch the order first
+        fetchOrder().catch(async (error) => {
+          console.log('Order not found for cash payment, attempting to recreate...')
+          // If order not found, try to recreate it from transaction_uuid
+          try {
+            const response = await fetch(`${getApiUrl()}/api/orders/?transaction_uuid=${transactionUuid}`)
+            if (response.ok) {
+              const orders = await response.json()
+              if (Array.isArray(orders) && orders.length > 0) {
+                console.log('Found existing order by transaction_uuid:', orders[0])
+                setOrder(orders[0])
+                setIsLoading(false)
+                return
+              }
+            }
+            // If still not found, show error
+            setFetchError('Order not found. Please contact support.')
+            setIsLoading(false)
+          } catch (recreateError) {
+            console.error('Error recreating cash order:', recreateError)
+            setFetchError('Order not found. Please contact support.')
+            setIsLoading(false)
+          }
+        })
+      } else {
+        // For eSewa payments, use the existing logic
+        fetch(`${getApiUrl()}/api/payments/esewa/verify/?transaction_uuid=${transactionUuid}`)
           .then(res => res.json())
           .then(async data => {
             if (data.status === 'success') {
@@ -175,18 +230,8 @@ export function OrderStatus({ orderId }: { orderId: string }) {
             }
           });
       }
-    } else {
-      fetchOrder();
     }
-  }, [transactionUuid]);
-
-  useEffect(() => {
-    mountedRef.current = true
-    fetchOrder()
-    return () => {
-      mountedRef.current = false
-    }
-  }, [orderId])
+  }, [transactionUuid])
 
   useEffect(() => {
     if (!order || order.status === 'completed' || order.status === 'cancelled') {
@@ -299,6 +344,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
   }
 
   if (isLoading) {
+    console.log('Rendering loading state')
     return (
       <Card>
         <CardHeader>
@@ -315,6 +361,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
   }
 
   if (fetchError && !isLoading) {
+    console.log('Rendering error state:', fetchError)
     return (
       <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
         <div className="flex items-center gap-2">
@@ -335,6 +382,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
   }
 
   if (!order) {
+    console.log('Rendering no order state')
     return (
       <Card>
         <CardHeader>
@@ -351,6 +399,7 @@ export function OrderStatus({ orderId }: { orderId: string }) {
     )
   }
 
+  console.log('Rendering order details:', order)
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#181e29] p-4">
       <Card className="max-w-md w-full mx-auto p-6 rounded-2xl shadow-lg bg-gradient-to-br from-[#181e29] to-[#232a3a] border-none">

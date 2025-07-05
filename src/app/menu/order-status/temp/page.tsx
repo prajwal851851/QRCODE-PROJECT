@@ -40,7 +40,7 @@ export default function TempOrderStatusPage() {
       setIsRefreshing(isManualRefresh)
       setFetchError(null)
 
-      const response = await fetch(`${getApiUrl()}/api/orders/${orderId}`)
+      const response = await fetch(`${getApiUrl()}/api/orders/${orderId}/`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
