@@ -27,7 +27,7 @@ class OrderItemSerializer(serializers.Serializer):
         return data
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = serializers.JSONField()  # Make items writable
+    items = serializers.JSONField(required=False, allow_null=True)  # Make items writable and allow null
     table_name = serializers.CharField(source='table.name', read_only=True)
     total = serializers.DecimalField(max_digits=10, decimal_places=2)
     table = serializers.PrimaryKeyRelatedField(queryset=Table.objects.all(), required=False)
@@ -46,7 +46,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def validate_items(self, items):
         if not items:
-            raise serializers.ValidationError("At least one item is required")
+            return []  # Allow empty items instead of raising error
         
         # Ensure items is a list
         if not isinstance(items, list):
@@ -86,31 +86,53 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """Custom representation to ensure items are properly formatted"""
-        data = super().to_representation(instance)
-        
-        # Ensure items are properly formatted when reading
-        if 'items' in data and data['items']:
-            try:
-                processed_items = []
-                for item in data['items']:
-                    if isinstance(item, dict):
-                        processed_item = {
-                            'id': item.get('id', str(item.get('name', 'Unknown Item'))),
-                            'name': item.get('name', 'Unknown Item'),
-                            'price': float(item.get('price', 0)),
-                            'quantity': int(item.get('quantity', 1))
-                        }
-                        processed_items.append(processed_item)
-                    else:
-                        continue
-                data['items'] = processed_items
-            except Exception as e:
-                print(f"Error processing items for order {instance.id}: {str(e)}")
+        try:
+            data = super().to_representation(instance)
+            
+            # Ensure items are properly formatted when reading
+            if 'items' in data and data['items'] is not None:
+                try:
+                    processed_items = []
+                    for item in data['items']:
+                        if isinstance(item, dict):
+                            processed_item = {
+                                'id': item.get('id', str(item.get('name', 'Unknown Item'))),
+                                'name': item.get('name', 'Unknown Item'),
+                                'price': float(item.get('price', 0)),
+                                'quantity': int(item.get('quantity', 1))
+                            }
+                            processed_items.append(processed_item)
+                        else:
+                            continue
+                    data['items'] = processed_items
+                except Exception as e:
+                    print(f"Error processing items for order {instance.id}: {str(e)}")
+                    data['items'] = []
+            else:
                 data['items'] = []
-        else:
-            data['items'] = []
-        
-        return data
+            
+            return data
+        except Exception as e:
+            print(f"Error in to_representation for order {instance.id}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            # Return a basic representation if there's an error
+            return {
+                'id': instance.id,
+                'table_name': getattr(instance.table, 'name', 'Unknown Table') if instance.table else 'Unknown Table',
+                'items': [],
+                'status': instance.status,
+                'total': str(instance.total),
+                'payment_status': instance.payment_status,
+                'payment_method': instance.payment_method,
+                'created_at': instance.created_at.isoformat() if instance.created_at else None,
+                'updated_at': instance.updated_at.isoformat() if instance.updated_at else None,
+                'dining_option': instance.dining_option,
+                'transaction_uuid': instance.transaction_uuid,
+                'special_instructions': instance.special_instructions,
+                'customer_name': instance.customer_name,
+                'extra_charges_applied': instance.extra_charges_applied or []
+            }
 
 class MenuItemSerializer(serializers.ModelSerializer):
     discount_percentage = serializers.SerializerMethodField()

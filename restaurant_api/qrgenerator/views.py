@@ -288,23 +288,24 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 
     def retrieve(self, request, *args, **kwargs):
-        print(f"[OrderViewSet] Retrieve called with pk: {kwargs.get('pk')}")
+        order_id = kwargs.get('id')  # Use 'id' since lookup_field = 'id'
+        print(f"[OrderViewSet] Retrieve called with order_id: {order_id}")
         print(f"[OrderViewSet] Request user authenticated: {request.user.is_authenticated}")
         print(f"[OrderViewSet] Request user: {request.user}")
         
         try:
             # For unauthenticated users (customers), allow access to any order
             if not request.user.is_authenticated:
-                print(f"[OrderViewSet] Unauthenticated user, searching for order with pk: {kwargs['pk']}")
-                order = Order.objects.get(pk=kwargs['pk'])
+                print(f"[OrderViewSet] Unauthenticated user, searching for order with id: {order_id}")
+                order = Order.objects.get(id=order_id)
                 print(f"[OrderViewSet] Found order: {order.id}")
             else:
                 # For authenticated users, use the filtered queryset
                 print(f"[OrderViewSet] Authenticated user, searching in filtered queryset")
-                order = self.get_queryset().get(pk=kwargs['pk'])
+                order = self.get_queryset().get(id=order_id)
                 print(f"[OrderViewSet] Found order: {order.id}")
         except Order.DoesNotExist:
-            print(f"[OrderViewSet] Order not found with pk: {kwargs['pk']}")
+            print(f"[OrderViewSet] Order not found with id: {order_id}")
             print(f"[OrderViewSet] All orders in database:")
             for o in Order.objects.all()[:10]:  # Show first 10 orders
                 print(f"  - Order ID: {o.id}, PK: {o.pk}")
@@ -322,7 +323,12 @@ class OrderViewSet(viewsets.ModelViewSet):
             print(f"[OrderViewSet] Error serializing order: {str(e)}")
             import traceback
             traceback.print_exc()
-            return Response({'detail': 'Internal server error.'}, status=500)
+            # Return more specific error information
+            return Response({
+                'detail': 'Internal server error.',
+                'error': str(e),
+                'order_id': order_id
+            }, status=500)
 
     def create(self, request, *args, **kwargs):
         print(f"[OrderViewSet] Received data: {request.data}")
