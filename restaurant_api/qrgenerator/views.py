@@ -241,7 +241,6 @@ class CreateOrderFromMenuView(APIView):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    lookup_field = 'id'
     queryset = Order.objects.none()
     serializer_class = OrderSerializer
     filter_backends = [DjangoFilterBackend]
@@ -288,34 +287,12 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 
     def retrieve(self, request, *args, **kwargs):
-        print(f"[OrderViewSet] Retrieve called with pk: {kwargs.get('pk')}")
-        print(f"[OrderViewSet] Request user authenticated: {request.user.is_authenticated}")
-        print(f"[OrderViewSet] Request user: {request.user}")
-        
         try:
-            # For unauthenticated users (customers), allow access to any order
-            if not request.user.is_authenticated:
-                print(f"[OrderViewSet] Unauthenticated user, searching for order with pk: {kwargs['pk']}")
-                order = Order.objects.get(pk=kwargs['pk'])
-                print(f"[OrderViewSet] Found order: {order.id}")
-            else:
-                # For authenticated users, use the filtered queryset
-                print(f"[OrderViewSet] Authenticated user, searching in filtered queryset")
-                order = self.get_queryset().get(pk=kwargs['pk'])
-                print(f"[OrderViewSet] Found order: {order.id}")
+            order = Order.objects.get(pk=kwargs['pk'])
         except Order.DoesNotExist:
-            print(f"[OrderViewSet] Order not found with pk: {kwargs['pk']}")
-            print(f"[OrderViewSet] All orders in database:")
-            for o in Order.objects.all()[:10]:  # Show first 10 orders
-                print(f"  - Order ID: {o.id}, PK: {o.pk}")
             return Response({'detail': 'Order not found.'}, status=404)
-        except Exception as e:
-            print(f"[OrderViewSet] Unexpected error: {e}")
-            return Response({'detail': 'Internal server error.'}, status=500)
-        
         # Allow any user (authenticated or not) to view order details
         serializer = self.get_serializer(order)
-        print(f"[OrderViewSet] Returning order data: {serializer.data}")
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
@@ -333,14 +310,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         
         # Proceed with normal creation if no duplicate found
         try:
-            print(f"[OrderViewSet] Validating order data...")
             # Validate the data first
             serializer = self.get_serializer(data=request.data)
             if not serializer.is_valid():
                 print(f"[OrderViewSet] Validation errors: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
-            print(f"[OrderViewSet] Data validation successful, creating order...")
             return super().create(request, *args, **kwargs)
         except Exception as e:
             print(f"[OrderViewSet] Error creating order: {str(e)}")
@@ -350,38 +325,25 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         order_id = generate_unique_order_id()
-        print(f"[OrderViewSet] Generated order ID: {order_id}")
-        
         # Always assign the order to the admin user (table.user), not the employee
         table_id = self.request.data.get('table') or self.request.data.get('table_id')
-        print(f"[OrderViewSet] Table ID from request: {table_id}")
-        
         table = None
         if table_id:
             try:
                 table = Table.objects.get(id=table_id)
-                print(f"[OrderViewSet] Found table: {table.name} (ID: {table.id})")
             except Table.DoesNotExist:
-                print(f"[OrderViewSet] Table not found with ID: {table_id}")
                 pass
         
         # Use the admin user for all orders on this table
         if table and table.user:
-            print(f"[OrderViewSet] Creating order with table user: {table.user}")
             order = serializer.save(id=order_id, user=table.user)
         else:
-            print(f"[OrderViewSet] Creating order without table user")
             order = serializer.save(id=order_id)
-        
-        print(f"[OrderViewSet] Order created successfully: {order.id}")
-        
         # --- STOCK OUT LOGIC ---
         
         from decimal import Decimal
         from django.utils import timezone
         items = order.items if hasattr(order, 'items') else []
-        print(f"[OrderViewSet] Processing {len(items)} items for stock out")
-        
         for item in items:
             menu_item_id = item.get('id')
             quantity = Decimal(item.get('quantity', 1))
@@ -400,8 +362,6 @@ class OrderViewSet(viewsets.ModelViewSet):
                     created_by=order.user
                 )
         # --- END STOCK OUT LOGIC ---
-        
-        print(f"[OrderViewSet] Order creation completed: {order.id}")
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)

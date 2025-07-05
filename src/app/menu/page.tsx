@@ -301,7 +301,7 @@ export default function CustomerMenuPage() {
       const orderData = {
         table_id: tableId,
         items: cartItems.map((item) => ({
-          id: item.id.toString(),
+          menuItemId: item.id.toString(),
           name: item.name,
           price: item.price,
           quantity: item.quantity,

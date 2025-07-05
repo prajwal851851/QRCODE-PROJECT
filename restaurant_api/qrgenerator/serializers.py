@@ -8,10 +8,14 @@ class TableSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'qr_code_url', 'section', 'size', 'active', 'created_at', 'updated_at', 'public_id']
 
 class OrderItemSerializer(serializers.Serializer):
-    id = serializers.CharField()  # Use 'id' as the primary field
+    menuItemId = serializers.SerializerMethodField()
     name = serializers.CharField()
     price = serializers.FloatField()
     quantity = serializers.IntegerField()
+
+    def get_menuItemId(self, obj):
+        # Fallback to 'id' if 'menuItemId' is not present
+        return obj.get('menuItemId') or obj.get('id')
     
     def validate(self, data):
         # Ensure we have the required fields
@@ -21,8 +25,6 @@ class OrderItemSerializer(serializers.Serializer):
             raise serializers.ValidationError("Item price is required")
         if data.get('quantity') is None:
             raise serializers.ValidationError("Item quantity is required")
-        if not data.get('id'):
-            raise serializers.ValidationError("Item ID is required")
         return data
 
 class OrderSerializer(serializers.ModelSerializer):

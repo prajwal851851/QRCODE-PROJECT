@@ -86,9 +86,18 @@ export default function TempOrderStatusPage() {
     
     // Handle malformed URLs with double question marks (eSewa issue)
     let actualTransactionUuid = transactionUuid
+    if (!actualTransactionUuid) {
+      // Try to extract from the full URL if searchParams didn't work
+      const fullUrl = window.location.href
+      const transactionMatch = fullUrl.match(/transaction_uuid=([^&?]+)/)
+      if (transactionMatch) {
+        actualTransactionUuid = transactionMatch[1]
+        console.log('Extracted transaction_uuid from malformed URL:', actualTransactionUuid)
+      }
+    }
     
-    // If we have data parameter from eSewa, extract transaction_uuid from it
-    if (dataParam) {
+    // If we have data parameter from eSewa, try to extract transaction_uuid from it
+    if (!actualTransactionUuid && dataParam) {
       try {
         const decodedData = atob(dataParam)
         const responseData = JSON.parse(decodedData)
@@ -96,16 +105,6 @@ export default function TempOrderStatusPage() {
         console.log('Extracted transaction_uuid from eSewa data:', actualTransactionUuid)
       } catch (error) {
         console.error('Error parsing eSewa data:', error)
-      }
-    }
-    
-    // If still no transaction_uuid, try to extract from the full URL
-    if (!actualTransactionUuid) {
-      const fullUrl = window.location.href
-      const transactionMatch = fullUrl.match(/transaction_uuid=([^&?]+)/)
-      if (transactionMatch) {
-        actualTransactionUuid = transactionMatch[1]
-        console.log('Extracted transaction_uuid from malformed URL:', actualTransactionUuid)
       }
     }
     
