@@ -156,7 +156,7 @@ def initiate_payment(request):
         secret_key = '8gBm/:&EnhH.1/q'  # Test environment secret key
         payment_url = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'  # Test environment URL
         import os
-        frontend_base_url = os.environ.get('FRONTEND_BASE_URL', 'https://your-frontend-url.vercel.app')
+        frontend_base_url = os.environ.get('FRONTEND_BASE_URL', 'https://dynamic-creponne-83f334.netlify.app')
 
         print('[eSewa INITIATE] Configuration:', {
             'product_code': product_code,
@@ -450,7 +450,7 @@ def cancel_payment(request):
         
         # Redirect to menu page
         import os
-        frontend_base_url = os.environ.get('FRONTEND_BASE_URL', 'https://your-frontend-url.vercel.app')
+        frontend_base_url = os.environ.get('FRONTEND_BASE_URL', 'https://dynamic-creponne-83f334.netlify.app')
         if order_id:
             # Try to get table info from order
             try:

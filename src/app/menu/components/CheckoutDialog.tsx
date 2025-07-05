@@ -208,17 +208,25 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
       }
 
       const data = await createOrderWithCheck(orderData)
-    const orderId = data.id || (data.order && data.order.id)
-        // Redirect to order status page with tableUid and transaction_uuid
-        const tableUid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tableUid') : null;
-        let url = `/menu/order-status/${orderId}`;
-        if (tableUid) {
-          url += `?transaction_uuid=${transactionUuid}&tableUid=${tableUid}`;
-        } else {
-          url += `?transaction_uuid=${transactionUuid}`;
-        }
-        onOrderPlaced();
-        router.push(url);
+      console.log('Order creation response:', data)
+      const orderId = data.id || (data.order && data.order.id)
+      console.log('Extracted order ID:', orderId)
+      
+      if (!orderId) {
+        throw new Error('Failed to get order ID from response')
+      }
+      
+      // Redirect to order status page with tableUid and transaction_uuid
+      const tableUid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tableUid') : null;
+      let url = `/menu/order-status/${orderId}`;
+      if (tableUid) {
+        url += `?transaction_uuid=${transactionUuid}&tableUid=${tableUid}`;
+      } else {
+        url += `?transaction_uuid=${transactionUuid}`;
+      }
+      console.log('Redirecting to:', url)
+      onOrderPlaced();
+      router.push(url);
   }
     } catch (err) {
       console.error('Error in handleSubmit:', err)

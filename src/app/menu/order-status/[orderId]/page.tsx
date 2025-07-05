@@ -106,23 +106,34 @@ export default function OrderStatusPage({ params }: { params: { orderId: string 
       <div className="min-h-screen bg-gradient-to-br from-[#0f1419] to-[#1a1f2e] flex items-center justify-center p-4">
         <Card className="max-w-md w-full mx-auto p-6 rounded-2xl shadow-lg bg-gradient-to-br from-[#181e29] to-[#232a3a] border-none">
           <CardHeader>
-            <CardTitle className="text-white text-center">Error Loading Order</CardTitle>
+            <CardTitle className="text-white text-center">Order Not Found</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
-                <span className="text-sm font-medium">Error loading order</span>
+                <span className="text-sm font-medium">Order not found</span>
               </div>
-              <p className="text-xs mt-1">{fetchError}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleManualRefresh}
-                className="mt-2 text-xs"
-              >
-                Try Again
-              </Button>
+              <p className="text-xs mt-1">Order ID: {params.orderId}</p>
+              <p className="text-xs mt-1">This order may have been deleted or doesn't exist.</p>
+              <div className="flex gap-2 mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManualRefresh}
+                  className="text-xs"
+                >
+                  Try Again
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.href = '/menu'}
+                  className="text-xs"
+                >
+                  Back to Menu
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
