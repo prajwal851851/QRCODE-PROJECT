@@ -25,7 +25,7 @@ class Table(models.Model):
 
     def save(self, *args, **kwargs):
         # Dynamically generate the QR code URL based on the table public_id
-        self.qr_code_url = f"http://localhost:3003/menu?tableUid={self.public_id}"
+        self.qr_code_url = f"https://dynamic-creponne-83f334.netlify.app/menu?tableUid={self.public_id}"
         # If admin is not set and user is an employee, set admin to user's admin
         if not self.admin and self.user and self.user.is_employee and self.user.created_by:
             self.admin = self.user.created_by

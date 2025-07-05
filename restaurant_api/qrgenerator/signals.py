@@ -9,7 +9,7 @@ from django.conf import settings
 @receiver(post_save, sender=Table)
 def generate_qr_code_image(sender, instance, created, **kwargs):
     # Generate the QR code URL dynamically
-    qr_data = f"http://localhost:3003/menu?tableId={instance.name}"
+            qr_data = f"https://dynamic-creponne-83f334.netlify.app/menu?tableId={instance.name}"
     qr = qrcode.make(qr_data)
     buffer = BytesIO()
     qr.save(buffer, format='PNG')

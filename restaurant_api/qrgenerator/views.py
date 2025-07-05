@@ -58,7 +58,7 @@ class TableViewSet(viewsets.ModelViewSet):
                 table = serializer.save(user=admin_user, admin=admin_user)
             else:
                 table = serializer.save(user=user, admin=user)
-            qr_url = f"http://localhost:3003/menu?tableId={table.name}"
+            qr_url = f"https://dynamic-creponne-83f334.netlify.app/menu?tableId={table.name}"
             table.qr_code_url = qr_url
             table.save(update_fields=['qr_code_url'])
         except IntegrityError:
@@ -68,7 +68,7 @@ class TableViewSet(viewsets.ModelViewSet):
     def qr_code_url(self, request, pk=None):
         table = self.get_object()
         if not table.qr_code_url:
-            qr_url = f"http://localhost:3003/menu?tableId={table.name}"  # Use table.name instead of table.id
+            qr_url = f"https://dynamic-creponne-83f334.netlify.app/menu?tableId={table.name}"  # Use table.name instead of table.id
             table.qr_code_url = qr_url
             table.save(update_fields=['qr_code_url'])
         return Response({'qr_code_url': table.qr_code_url})
@@ -123,7 +123,7 @@ class DiscountViewSet(viewsets.ModelViewSet):
 def menu_redirect_view(request):
     table_id = request.query_params.get('table_id')
     if table_id:
-        return redirect(f'http://localhost:3003/menu?tableid={table_id}')
+        return redirect(f'https://dynamic-creponne-83f334.netlify.app/menu?tableid={table_id}')
     return Response({'error': 'Missing tableNumber parameter'}, status=400)
 
 
@@ -478,107 +478,107 @@ class OrderViewSet(viewsets.ModelViewSet):
                 admin_user = user.created_by
             else:
                 admin_user = user
-        # Date range filter
-        start_date = request.query_params.get('start_date')
-        end_date = request.query_params.get('end_date')
-        orders = Order.objects.filter(user=admin_user)
-        if start_date:
-            orders = orders.filter(created_at__date__gte=start_date)
-        if end_date:
-            orders = orders.filter(created_at__date__lte=end_date)
-        # Total revenue (completed orders)
-        total_revenue = orders.filter(status='completed').aggregate(total=Sum('total'))['total'] or 0
-        # Total orders
-        total_orders = orders.count()
-        # Total customers (unique customer_name for completed orders)
-        total_customers = orders.filter(status='completed').exclude(customer_name__isnull=True).exclude(customer_name='').values('customer_name').distinct().count()
-        # Active/inactive tables
-        active_tables = Table.objects.filter(user=admin_user, active=True).count()
-        inactive_tables = Table.objects.filter(user=admin_user, active=False).count()
-        # Recent orders
-        recent_orders = OrderSerializer(orders.order_by('-created_at')[:5], many=True).data
-        # Add currency to recent_orders
-        for o in recent_orders:
-            o['total'] = f"Rs {o['total']}"
-        # Revenue overview (monthly for last 12 months)
-        today = timezone.now().date()
-        months = []
-        revenue_overview = []
-        for i in range(11, -1, -1):
-            first = (today.replace(day=1) - datetime.timedelta(days=30*i)).replace(day=1)
-            last = (first + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
-            month_orders = orders.filter(created_at__date__gte=first, created_at__date__lte=last, status='completed')
-            revenue = month_orders.aggregate(total=Sum('total'))['total'] or 0
-            months.append(first.strftime('%b %Y'))
-            revenue_overview.append({'month': first.strftime('%b %Y'), 'revenue': f"Rs {revenue}"})
-        # Most ordered item (aggregate from items JSON field)
-        item_counter = Counter()
-        for order in orders:
-            for item in order.items:
-                item_counter[item.get('name')] += item.get('quantity', 1)
-        most_ordered_item = None
-        if item_counter:
-            name, count = item_counter.most_common(1)[0]
-            most_ordered_item = {'name': name, 'count': count}
-        # Recent activities (last 10 order status changes)
-        recent_activities = orders.order_by('-updated_at').values('id', 'status', 'table', 'updated_at')[:10]
-        # Month revenue (for chart)
-        month_revenue = revenue_overview
-        # Order heatmap (by weekday/hour)
-        heatmap = {}
-        for weekday in range(7):
-            heatmap[calendar.day_name[weekday]] = [0]*24
-        for o in orders:
-            dt = o.created_at
-            heatmap[calendar.day_name[dt.weekday()]][dt.hour] += 1
-        # Table occupancy rate (approximate)
-        total_table_time = 0
-        occupied_time = 0
-        for t in Table.objects.filter(user=admin_user):
-            table_orders = orders.filter(table=t)
-            if table_orders.exists():
-                times = list(table_orders.order_by('created_at').values_list('created_at', flat=True))
-                total_table_time += (timezone.now() - times[0]).total_seconds()
-                for i in range(1, len(times)):
-                    occupied_time += (times[i] - times[i-1]).total_seconds()
-        table_occupancy_rate = (occupied_time / total_table_time * 100) if total_table_time else 0
-        # Average order value
-        average_order_value = (total_revenue / total_orders) if total_orders else 0
-        # Top customers
-        top_customers = orders.filter(status='completed').exclude(customer_name__isnull=True).exclude(customer_name='').values('customer_name').annotate(count=Count('id'), revenue=Sum('total')).order_by('-revenue')[:5]
-        # Add currency to top_customers revenue
-        for c in top_customers:
-            c['revenue'] = f"Rs {c['revenue']}"
-        # Order status breakdown
-        status_breakdown = orders.values('status').annotate(count=Count('id'))
-        # Pending actions
-        pending_actions = OrderSerializer(orders.filter(status__in=['pending', 'in-progress']).order_by('-created_at')[:5], many=True).data
-        for o in pending_actions:
-            o['total'] = f"Rs {o['total']}"
-        # Feedback overview (if available)
-        feedback_overview = None
-        # Inventory alerts (if inventory tracked)
-        inventory_alerts = None
-        return Response({
-            'total_revenue': f"Rs {total_revenue}",
-            'total_orders': total_orders,
-            'total_customers': total_customers,
-            'active_tables': active_tables,
-            'inactive_tables': inactive_tables,
-            'recent_orders': recent_orders,
-            'revenue_overview': revenue_overview,
-            'most_ordered_item': most_ordered_item,
-            'recent_activities': list(recent_activities),
-            'month_revenue': month_revenue,
-            'order_heatmap': heatmap,
-            'table_occupancy_rate': table_occupancy_rate,
-            'average_order_value': f"Rs {average_order_value}",
-            'top_customers': list(top_customers),
-            'order_status_breakdown': list(status_breakdown),
-            'pending_actions': pending_actions,
-            'feedback_overview': feedback_overview,
-            'inventory_alerts': inventory_alerts,
-        })
+            # Date range filter
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+            orders = Order.objects.filter(user=admin_user)
+            if start_date:
+                orders = orders.filter(created_at__date__gte=start_date)
+            if end_date:
+                orders = orders.filter(created_at__date__lte=end_date)
+            # Total revenue (completed orders)
+            total_revenue = orders.filter(status='completed').aggregate(total=Sum('total'))['total'] or 0
+            # Total orders
+            total_orders = orders.count()
+            # Total customers (unique customer_name for completed orders)
+            total_customers = orders.filter(status='completed').exclude(customer_name__isnull=True).exclude(customer_name='').values('customer_name').distinct().count()
+            # Active/inactive tables
+            active_tables = Table.objects.filter(user=admin_user, active=True).count()
+            inactive_tables = Table.objects.filter(user=admin_user, active=False).count()
+            # Recent orders
+            recent_orders = OrderSerializer(orders.order_by('-created_at')[:5], many=True).data
+            # Add currency to recent_orders
+            for o in recent_orders:
+                o['total'] = f"Rs {o['total']}"
+            # Revenue overview (monthly for last 12 months)
+            today = timezone.now().date()
+            months = []
+            revenue_overview = []
+            for i in range(11, -1, -1):
+                first = (today.replace(day=1) - datetime.timedelta(days=30*i)).replace(day=1)
+                last = (first + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
+                month_orders = orders.filter(created_at__date__gte=first, created_at__date__lte=last, status='completed')
+                revenue = month_orders.aggregate(total=Sum('total'))['total'] or 0
+                months.append(first.strftime('%b %Y'))
+                revenue_overview.append({'month': first.strftime('%b %Y'), 'revenue': f"Rs {revenue}"})
+            # Most ordered item (aggregate from items JSON field)
+            item_counter = Counter()
+            for order in orders:
+                for item in order.items:
+                    item_counter[item.get('name')] += item.get('quantity', 1)
+            most_ordered_item = None
+            if item_counter:
+                name, count = item_counter.most_common(1)[0]
+                most_ordered_item = {'name': name, 'count': count}
+            # Recent activities (last 10 order status changes)
+            recent_activities = orders.order_by('-updated_at').values('id', 'status', 'table', 'updated_at')[:10]
+            # Month revenue (for chart)
+            month_revenue = revenue_overview
+            # Order heatmap (by weekday/hour)
+            heatmap = {}
+            for weekday in range(7):
+                heatmap[calendar.day_name[weekday]] = [0]*24
+            for o in orders:
+                dt = o.created_at
+                heatmap[calendar.day_name[dt.weekday()]][dt.hour] += 1
+            # Table occupancy rate (approximate)
+            total_table_time = 0
+            occupied_time = 0
+            for t in Table.objects.filter(user=admin_user):
+                table_orders = orders.filter(table=t)
+                if table_orders.exists():
+                    times = list(table_orders.order_by('created_at').values_list('created_at', flat=True))
+                    total_table_time += (timezone.now() - times[0]).total_seconds()
+                    for i in range(1, len(times)):
+                        occupied_time += (times[i] - times[i-1]).total_seconds()
+            table_occupancy_rate = (occupied_time / total_table_time * 100) if total_table_time else 0
+            # Average order value
+            average_order_value = (total_revenue / total_orders) if total_orders else 0
+            # Top customers
+            top_customers = orders.filter(status='completed').exclude(customer_name__isnull=True).exclude(customer_name='').values('customer_name').annotate(count=Count('id'), revenue=Sum('total')).order_by('-revenue')[:5]
+            # Add currency to top_customers revenue
+            for c in top_customers:
+                c['revenue'] = f"Rs {c['revenue']}"
+            # Order status breakdown
+            status_breakdown = orders.values('status').annotate(count=Count('id'))
+            # Pending actions
+            pending_actions = OrderSerializer(orders.filter(status__in=['pending', 'in-progress']).order_by('-created_at')[:5], many=True).data
+            for o in pending_actions:
+                o['total'] = f"Rs {o['total']}"
+            # Feedback overview (if available)
+            feedback_overview = None
+            # Inventory alerts (if inventory tracked)
+            inventory_alerts = None
+            return Response({
+                'total_revenue': f"Rs {total_revenue}",
+                'total_orders': total_orders,
+                'total_customers': total_customers,
+                'active_tables': active_tables,
+                'inactive_tables': inactive_tables,
+                'recent_orders': recent_orders,
+                'revenue_overview': revenue_overview,
+                'most_ordered_item': most_ordered_item,
+                'recent_activities': list(recent_activities),
+                'month_revenue': month_revenue,
+                'order_heatmap': heatmap,
+                'table_occupancy_rate': table_occupancy_rate,
+                'average_order_value': f"Rs {average_order_value}",
+                'top_customers': list(top_customers),
+                'order_status_breakdown': list(status_breakdown),
+                'pending_actions': pending_actions,
+                'feedback_overview': feedback_overview,
+                'inventory_alerts': inventory_alerts,
+            })
         except Exception as e:
             print(f"Error in dashboard_full_stats: {str(e)}")
             import traceback
