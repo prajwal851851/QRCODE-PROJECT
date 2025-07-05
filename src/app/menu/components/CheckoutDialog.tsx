@@ -175,55 +175,55 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
         // Cash payment: create order immediately and redirect
         console.log('Creating cash payment order for amount:', total)
         
-        let tableId = Number(tableName)
-        if (isNaN(tableId)) {
-          const res = await fetch(`${getApiUrl()}/api/tables/?public_id=${tableName}`)
-          if (!res.ok) throw new Error('Failed to fetch table info')
-          const tables = await res.json()
-          if (!tables.length) throw new Error('Table not found')
-          tableId = tables[0].id
-        }
+      let tableId = Number(tableName)
+      if (isNaN(tableId)) {
+        const res = await fetch(`${getApiUrl()}/api/tables/?public_id=${tableName}`)
+        if (!res.ok) throw new Error('Failed to fetch table info')
+        const tables = await res.json()
+        if (!tables.length) throw new Error('Table not found')
+        tableId = tables[0].id
+      }
         
-        const formattedExtraCharges = extraCharges.map(charge => ({
-          label: charge.label,
-          amount: Number(charge.amount)
-        }))
-        
-        // Generate a unique transaction_uuid for cash payment
-        const transactionUuid = `cash-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        
-        const orderData = {
-          table: tableId,
-          items: cartItems.map(item => ({
+      const formattedExtraCharges = extraCharges.map(charge => ({
+        label: charge.label,
+        amount: Number(charge.amount)
+      }))
+      
+      // Generate a unique transaction_uuid for cash payment
+      const transactionUuid = `cash-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      
+      const orderData = {
+        table: tableId,
+        items: cartItems.map(item => ({
             id: item.id.toString(), // Use 'id' instead of 'menuItemId' to match backend expectations
-            name: item.name,
+          name: item.name,
             price: Number(item.price),
-            quantity: item.quantity
-          })),
-          customer_name: customerName,
-          special_instructions: specialInstructions,
-          dining_option: diningOption,
-          total: total,
+          quantity: item.quantity
+        })),
+        customer_name: customerName,
+        special_instructions: specialInstructions,
+        dining_option: diningOption,
+        total: total,
           payment_status: 'pending',
           payment_method: paymentMethod,
-          extra_charges_applied: formattedExtraCharges,
-          transaction_uuid: transactionUuid
-        }
+        extra_charges_applied: formattedExtraCharges,
+        transaction_uuid: transactionUuid
+      }
 
         console.log('Creating order with data:', orderData)
         
         try {
-          const data = await createOrderWithCheck(orderData)
-          console.log('Order creation response:', data)
+      const data = await createOrderWithCheck(orderData)
+      console.log('Order creation response:', data)
           
           // Extract order ID from response
-          const orderId = data.id || (data.order && data.order.id)
-          console.log('Extracted order ID:', orderId)
-          
-          if (!orderId) {
-            throw new Error('Failed to get order ID from response')
-          }
-          
+      const orderId = data.id || (data.order && data.order.id)
+      console.log('Extracted order ID:', orderId)
+      
+      if (!orderId) {
+        throw new Error('Failed to get order ID from response')
+      }
+      
           // Clear cart and redirect to order status
           setCartItems([])
           onOrderPlaced()
@@ -239,7 +239,7 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
           console.error('Error creating order:', orderError)
           throw new Error(`Failed to create order: ${orderError instanceof Error ? orderError.message : 'Unknown error'}`)
         }
-      }
+  }
     } catch (error) {
       console.error('Payment error:', error)
       setError(error instanceof Error ? error.message : "An error occurred during payment. Please try again.")

@@ -192,7 +192,7 @@ DJOSER = {
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
-    'https://dynamic-creponne-83f334.netlify.app',
+    'https://qr-menu-code.netlify.app',
     'http://localhost:3000',
     'http://localhost:3003',
     'http://127.0.0.1:3000',
@@ -212,7 +212,7 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 
 CORS_ALLOWED_ORIGINS = [
-    'https://dynamic-creponne-83f334.netlify.app',
+    'https://qr-menu-code.netlify.app',
     'http://localhost:3000',
     'http://localhost:3003',
     'http://127.0.0.1:3000',
@@ -273,4 +273,4 @@ AUTHENTICATION_BACKENDS = [
 ESEWA_PAYMENT_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"  # Use https://epay.esewa.com.np/api/epay/main/v2/form for production
 ESEWA_PRODUCT_CODE = "EPAYTEST"  # Replace with your actual product code in production
 ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q("  # Replace with your actual secret key in production
-FRONTEND_BASE_URL = "https://dynamic-creponne-83f334.netlify.app"
+FRONTEND_BASE_URL = "https://qr-menu-code.netlify.app"

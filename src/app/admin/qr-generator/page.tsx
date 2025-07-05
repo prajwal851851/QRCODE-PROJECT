@@ -32,7 +32,7 @@ interface Table {
   public_id: string
 }
 
-const baseUrl = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_FRONTEND_URL || "https://dynamic-creponne-83f334.netlify.app";
+const baseUrl = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_FRONTEND_URL || "https://qr-menu-code.netlify.app";
 
 export default function QRGeneratorPage() {
   const { setShow } = useLoading();

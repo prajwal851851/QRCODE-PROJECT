@@ -8,7 +8,7 @@ class Command(BaseCommand):
         tables = Table.objects.all()
         updated_count = 0
         for table in tables:
-            correct_url = f"https://dynamic-creponne-83f334.netlify.app/menu?tableId={table.name}"  # Use table.name for tableId
+            correct_url = f"https://qr-menu-code.netlify.app/menu?tableId={table.name}"  # Use table.name for tableId
             if table.qr_code_url != correct_url:
                 table.qr_code_url = correct_url
                 table.save(update_fields=['qr_code_url'])

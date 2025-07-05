@@ -58,7 +58,7 @@ class TableViewSet(viewsets.ModelViewSet):
                 table = serializer.save(user=admin_user, admin=admin_user)
             else:
                 table = serializer.save(user=user, admin=user)
-            qr_url = f"https://dynamic-creponne-83f334.netlify.app/menu?tableId={table.name}"
+            qr_url = f"https://qr-menu-code.netlify.app/menu?tableId={table.name}"
             table.qr_code_url = qr_url
             table.save(update_fields=['qr_code_url'])
         except IntegrityError:
@@ -68,7 +68,7 @@ class TableViewSet(viewsets.ModelViewSet):
     def qr_code_url(self, request, pk=None):
         table = self.get_object()
         if not table.qr_code_url:
-            qr_url = f"https://dynamic-creponne-83f334.netlify.app/menu?tableId={table.name}"  # Use table.name instead of table.id
+            qr_url = f"https://qr-menu-code.netlify.app/menu?tableId={table.name}"  # Use table.name instead of table.id
             table.qr_code_url = qr_url
             table.save(update_fields=['qr_code_url'])
         return Response({'qr_code_url': table.qr_code_url})
@@ -123,7 +123,7 @@ class DiscountViewSet(viewsets.ModelViewSet):
 def menu_redirect_view(request):
     table_id = request.query_params.get('table_id')
     if table_id:
-        return redirect(f'https://dynamic-creponne-83f334.netlify.app/menu?tableid={table_id}')
+        return redirect(f'https://qr-menu-code.netlify.app/menu?tableid={table_id}')
     return Response({'error': 'Missing tableNumber parameter'}, status=400)
 
 
