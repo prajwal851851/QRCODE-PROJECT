@@ -367,4 +367,10 @@ restaurant_admin_site.register(Permission, PermissionAdmin)
 
 # Also register with the default admin site for backward compatibility
 from django.contrib import admin as default_admin
+# Unregister if already registered (in case Django auto-registered it)
+try:
+    default_admin.site.unregister(CustomUser)
+except admin.sites.NotRegistered:
+    pass
+default_admin.site.register(CustomUser, CustomUserAdmin)
 default_admin.site.register(Permission, PermissionAdmin)
