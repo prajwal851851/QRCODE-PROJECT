@@ -243,7 +243,7 @@ export default function IntegrateEsewaPage() {
     try {
       const token = localStorage.getItem("adminAccessToken")
       
-      // Create request body with sensitive data
+      // SECURITY: Create request body with sensitive data
       const requestBody = {
         product_code: credentials.product_code,
         secret_key: credentials.secret_key,
@@ -251,7 +251,7 @@ export default function IntegrateEsewaPage() {
         environment: credentials.environment,
       }
       
-      // SECURITY: Never log sensitive data
+      // SECURITY: Never log sensitive data - only log environment
       console.log('Saving eSewa credentials for environment:', credentials.environment)
       
       const response = await fetch("/api/admin/", {
@@ -601,6 +601,20 @@ export default function IntegrateEsewaPage() {
         <AlertDescription className="text-orange-800 dark:text-orange-200">
           <strong>Security Notice:</strong> Your eSewa credentials are encrypted and stored securely. 
           Never share these credentials with anyone. Only you can view and modify them.
+        </AlertDescription>
+      </Alert>
+
+      {/* Security Warning */}
+      <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
+        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500" />
+        <AlertDescription className="text-red-800 dark:text-red-200">
+          <strong>🔒 CRITICAL SECURITY NOTICE:</strong><br />
+          • Your eSewa credentials are encrypted and stored securely on our servers<br />
+          • However, credentials are temporarily visible in browser network requests during saving<br />
+          • <strong>Never save credentials on public/shared computers</strong><br />
+          • <strong>Clear browser cache after saving credentials</strong><br />
+          • <strong>Use private/incognito mode for maximum security</strong><br />
+          • Contact support immediately if you suspect credential exposure
         </AlertDescription>
       </Alert>
 
