@@ -143,6 +143,18 @@ export default function IntegrateEsewaPage() {
     }
   }, [userData, loading, router, toast])
 
+  // SECURITY: Clear sensitive data when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear sensitive data when component unmounts
+      setCredentials(prev => ({
+        ...prev,
+        product_code: "",
+        secret_key: "",
+      }))
+    }
+  }, [])
+
   // Show loading while checking permissions
   if (loading) {
     return (
@@ -263,17 +275,19 @@ export default function IntegrateEsewaPage() {
         body: JSON.stringify(requestBody),
       })
 
+      // SECURITY: Immediately clear sensitive data from form after request
+      setCredentials(prev => ({
+        ...prev,
+        product_code: "",
+        secret_key: "",
+      }))
+
       if (response.ok) {
         toast({
           title: "Success",
           description: `eSewa credentials saved successfully for ${credentials.environment === 'production' ? 'production' : 'test'} environment.`,
         })
         loadCredentials()
-        setCredentials(prev => ({
-          ...prev,
-          product_code: "",
-          secret_key: "",
-        }))
       } else {
         const errorData = await response.json()
         
@@ -299,6 +313,13 @@ export default function IntegrateEsewaPage() {
         })
       }
     } catch (error) {
+      // SECURITY: Clear sensitive data even on network errors
+      setCredentials(prev => ({
+        ...prev,
+        product_code: "",
+        secret_key: "",
+      }))
+      
       console.error("Error saving credentials:", error)
       toast({
         title: "Error",
@@ -610,7 +631,8 @@ export default function IntegrateEsewaPage() {
         <AlertDescription className="text-red-800 dark:text-red-200">
           <strong>🔒 CRITICAL SECURITY NOTICE:</strong><br />
           • Your eSewa credentials are encrypted and stored securely on our servers<br />
-          • However, credentials are temporarily visible in browser network requests during saving<br />
+          • Credentials are temporarily visible in browser network requests during saving<br />
+          • <strong>Credentials are automatically cleared from form after each save attempt</strong><br />
           • <strong>Never save credentials on public/shared computers</strong><br />
           • <strong>Clear browser cache after saving credentials</strong><br />
           • <strong>Use private/incognito mode for maximum security</strong><br />
