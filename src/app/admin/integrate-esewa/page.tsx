@@ -625,6 +625,22 @@ export default function IntegrateEsewaPage() {
         </AlertDescription>
       </Alert>
 
+      {/* Critical Network Exposure Warning */}
+      <Alert className="border-red-300 bg-red-100 dark:border-red-700 dark:bg-red-950/30">
+        <AlertTriangle className="h-5 w-5 text-red-700 dark:text-red-400" />
+        <AlertDescription className="text-red-800 dark:text-red-200 font-medium">
+          <strong>🚨 CRITICAL: NETWORK TAB EXPOSURE 🚨</strong><br />
+          <span className="text-sm">
+            Your credentials will be visible in browser's Network tab during saving.<br />
+            <strong>This is unavoidable for web applications.</strong><br />
+            • Close Network tab after saving<br />
+            • Never save on public computers<br />
+            • Use private/incognito mode<br />
+            • Clear browser cache immediately after
+          </span>
+        </AlertDescription>
+      </Alert>
+
       {/* Security Warning */}
       <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
         <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500" />
