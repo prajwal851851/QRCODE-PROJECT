@@ -279,7 +279,7 @@ AUTHENTICATION_BACKENDS = [
 # eSewa Configuration
 ESEWA_PAYMENT_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"  # Use https://epay.esewa.com.np/api/epay/main/v2/form for production
 ESEWA_PRODUCT_CODE = "EPAYTEST"  # Replace with your actual product code in production
-ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q("  # Replace with your actual secret key in production
+ESEWA_SECRET_KEY = "8gBm/ZNzUjU7BEWrh" "ur actual secret key in production"
 FRONTEND_BASE_URL = "https://qr-menu-code.netlify.app"
 
 # eSewa Encryption Key (will be auto-generated if not set)
