@@ -21,6 +21,8 @@ export default function CheckoutContent() {
   const [cartItems, setCartItems] = useState([])
   const [orderId, setOrderId] = useState(null)
   const [mounted, setMounted] = useState(false)
+  const [esewaAvailable, setEsewaAvailable] = useState(false)
+  const [loadingEsewaStatus, setLoadingEsewaStatus] = useState(true)
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -38,6 +40,34 @@ export default function CheckoutContent() {
         setOrderId(storedOrderId as any)
       }
     }
+  }, [])
+
+  // Check eSewa credentials status
+  useEffect(() => {
+    const checkEsewaStatus = async () => {
+      try {
+        const response = await fetch(`${getApiUrl()}/api/admin/credentials/status/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setEsewaAvailable(data.has_secret_key)
+        } else {
+          setEsewaAvailable(false)
+        }
+      } catch (error) {
+        console.error('Error checking eSewa status:', error)
+        setEsewaAvailable(false)
+      } finally {
+        setLoadingEsewaStatus(false)
+      }
+    }
+
+    checkEsewaStatus()
   }, [])
 
   // Define a type for cart items to fix type errors
@@ -217,10 +247,22 @@ export default function CheckoutContent() {
                         <RadioGroupItem value="card" id="card" />
                         <Label htmlFor="card">Card Payment</Label>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="esewa" id="esewa" />
-                        <Label htmlFor="esewa">eSewa</Label>
-                      </div>
+                      {loadingEsewaStatus ? (
+                        <div className="flex items-center space-x-2 opacity-50">
+                          <RadioGroupItem value="esewa" id="esewa" disabled />
+                          <Label htmlFor="esewa" className="text-gray-400">eSewa (Loading...)</Label>
+                        </div>
+                      ) : esewaAvailable ? (
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="esewa" id="esewa" />
+                          <Label htmlFor="esewa">eSewa</Label>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2 opacity-50">
+                          <RadioGroupItem value="esewa" id="esewa" disabled />
+                          <Label htmlFor="esewa" className="text-gray-400">eSewa (Not Available)</Label>
+                        </div>
+                      )}
                     </RadioGroup>
                   </CardContent>
                 </Card>

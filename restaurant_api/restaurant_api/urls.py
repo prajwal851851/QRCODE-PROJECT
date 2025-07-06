@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/payments/esewa/', include('EsewaIntegration.urls')),
     path('api/payments/', include('payments.urls')),
     path('api/inventory/', include('InventoryManagement.urls')),
+    path('api/admin/', include('esewaSecretKey.urls')),
 ]
 
 

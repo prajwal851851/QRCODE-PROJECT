@@ -15,6 +15,7 @@ import {
   CreditCard,
   Icon,
   Package,
+  Shield,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -67,6 +68,17 @@ export function AdminSidebar() {
     
     // Check specific permissions
     return userData.permissions && userData.permissions[requiredPermission] === true
+  }
+
+  // Special check for admin-only features
+  const isAdminOnly = (permissions: string[]) => {
+    if (!userData) return false
+    
+    // Super admin and admin can access admin-only features
+    if (userData.role === 'super_admin' || userData.is_admin_or_super_admin) return true
+    
+    // Employees cannot access admin-only features
+    return false
   }
 
   const menuItems = [
@@ -132,12 +144,25 @@ export function AdminSidebar() {
       path: "/admin/settings",
       permissions: ["settings_view", "settings_edit"],
     },
+    {
+      name: "Integrate eSewa",
+      icon: Shield,
+      path: "/admin/integrate-esewa",
+      permissions: ["admin_only"], // Only admins and super admins can access
+    },
   ]
 
   // Filter menu items based on user permissions
   const filteredMenuItems = userData?.role === 'super_admin' 
     ? menuItems // Show all menu items to super_admin
-    : menuItems.filter(item => hasAnyPermission(item.permissions))
+    : menuItems.filter(item => {
+        // Special handling for admin-only items
+        if (item.permissions.includes('admin_only')) {
+          return isAdminOnly(item.permissions)
+        }
+        // Regular permission check for other items
+        return hasAnyPermission(item.permissions)
+      })
   
   // If user data isn't loaded yet, show nothing or a loading state
   if (!userData) {

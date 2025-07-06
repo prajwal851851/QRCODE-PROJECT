@@ -24,6 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production se
 
+ALLOWED_HOSTS = ['*']
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 
@@ -56,10 +58,12 @@ INSTALLED_APPS = [
     'PaynmentANDreview',
     'EsewaIntegration',
     'InventoryManagement',
+    'esewaSecretKey',
     
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # CORS should be first
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -69,7 +73,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Custom middleware to redirect employees to their permitted sections
     'UserRole.middleware.EmployeeRedirectMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
@@ -210,6 +213,10 @@ CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_AGE = 3600  # 1 hour
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 CORS_ALLOWED_ORIGINS = [
     'https://qr-menu-code.netlify.app',
@@ -269,8 +276,11 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# eSewa Configuration
-ESEWA_PAYMENT_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"  # Use https://epay.esewa.com.np/api/epay/main/v2/form for production
-ESEWA_PRODUCT_CODE = "EPAYTEST"  # Replace with your actual product code in production
-ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q("  # Replace with your actual secret key in production
+# eSewa Configuration - REMOVED: Each admin now manages their own credentials through the admin panel
+# ESEWA_PAYMENT_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"  # Legacy - removed
+# ESEWA_PRODUCT_CODE = "EPAYTEST"  # Legacy - removed  
+# ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q("  # Legacy - removed
 FRONTEND_BASE_URL = "https://qr-menu-code.netlify.app"
+
+# eSewa Encryption Key - Will auto-generate if not set (recommended for production)
+# ESEWA_ENCRYPTION_KEY = "XRUD8vcvWWPP7x95sRaLTSiiMIesLlJ8tF-gpM02Ewg="  # Removed for production

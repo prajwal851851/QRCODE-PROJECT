@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import EsewaTransaction
 from qrgenerator.models import Order, Table
+from esewaSecretKey.models import EsewaCredentials
+from django.core.exceptions import ObjectDoesNotExist
 
 # Helper for HMAC SHA256 signature
 def generate_signature(key, message):
@@ -76,15 +78,42 @@ def initiate_payment(request):
         # Generate UUID for transaction
         transaction_uuid = str(uuid.uuid4())
 
+        # Determine which admin owns this order/table to get their eSewa credentials
+        admin_user = None
+        
         # Handle temporary order IDs (for orders that will be created after payment)
         order = None
         if order_id.startswith('temp-'):
             # This is a temporary order ID, we'll create the order after payment
             print('[eSewa INITIATE] Temporary order ID detected:', order_id)
             
+            # Extract tableUid from the temporary order ID or request data
+            table_uid = ''
+            if order_id.startswith('temp-'):
+                table_uid = order_id.replace('temp-', '')
+            else:
+                table_uid = data.get('tableUid', '')
+            
+            # If we still don't have tableUid, try to get it from request data
+            if not table_uid:
+                table_uid = data.get('tableUid', '')
+            
+            if table_uid:
+                try:
+                    # Find the table by public_id to get the admin
+                    table = Table.objects.get(public_id=table_uid)
+                    admin_user = table.admin or table.user
+                    print(f'[eSewa INITIATE] Found table {table.name} owned by admin: {admin_user.email if admin_user else "None"}')
+                except Table.DoesNotExist:
+                    print(f'[eSewa INITIATE] Table with public_id {table_uid} not found')
+                    return Response({'error': 'Table not found'}, status=404)
+            else:
+                print('[eSewa INITIATE] No tableUid provided for temporary order')
+                return Response({'error': 'tableUid is required for temporary orders'}, status=400)
+            
             # Get order details from request data for storage
             order_details = {
-                'table_id': data.get('tableId'),
+                'table_id': table.id if table else None,
                 'customer_name': data.get('customerName', 'Customer'),
                 'items': data.get('items', []),
                 'total_amount': total_amount,
@@ -110,6 +139,9 @@ def initiate_payment(request):
             # Get order and enforce existence for existing orders
             try:
                 order = Order.objects.get(id=order_id)
+                # Get the admin who owns this table
+                admin_user = order.table.admin or order.table.user
+                print(f'[eSewa INITIATE] Found order {order.id} for table {order.table.name} owned by admin: {admin_user.email if admin_user else "None"}')
                 
                 # Get order details for storage
                 order_items = []
@@ -145,23 +177,48 @@ def initiate_payment(request):
                 except Exception as e:
                     print('[eSewa INITIATE] Error creating transaction:', str(e))
                     return Response({'error': 'Error creating transaction record'}, status=500)
+                    
             except Order.DoesNotExist:
+                print('[eSewa INITIATE] Error: Order not found')
                 return Response({'error': 'Order not found'}, status=404)
             except Exception as e:
                 print('[eSewa INITIATE] Error fetching order:', str(e))
                 return Response({'error': 'Error fetching order'}, status=500)
 
-        # Get configuration
-        product_code = 'EPAYTEST'  # Test environment product code
-        secret_key = '8gBm/:&EnhH.1/q'  # Test environment secret key
-        payment_url = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'  # Test environment URL
+        # Get the admin's eSewa credentials
+        if not admin_user:
+            print('[eSewa INITIATE] Error: Could not determine admin user for this order/table')
+            return Response({'error': 'Could not determine restaurant owner for this order'}, status=400)
+        
+        try:
+            credentials = EsewaCredentials.objects.get(admin=admin_user, is_active=True)
+            if not credentials.is_esewa_enabled():
+                print(f'[eSewa INITIATE] Error: eSewa not properly configured for admin {admin_user.email}')
+                return Response({'error': 'eSewa payment is not configured for this restaurant'}, status=400)
+            
+            product_code = credentials.esewa_product_code
+            secret_key = credentials.decrypt_secret_key()
+            print(f'[eSewa INITIATE] Using eSewa credentials for admin: {admin_user.email}')
+            print(f'[eSewa INITIATE] Product code: {credentials.get_masked_product_code()}')
+            
+        except EsewaCredentials.DoesNotExist:
+            print(f'[eSewa INITIATE] Error: No eSewa credentials found for admin {admin_user.email}')
+            return Response({'error': 'eSewa payment is not configured for this restaurant'}, status=400)
+        except Exception as e:
+            print(f'[eSewa INITIATE] Error getting eSewa credentials: {str(e)}')
+            return Response({'error': 'Error accessing eSewa configuration'}, status=500)
+
+        # Use production or test environment based on credentials
+        payment_url = credentials.get_payment_url()
+        
         import os
         frontend_base_url = os.environ.get('FRONTEND_BASE_URL', 'https://qr-menu-code.netlify.app')
 
         print('[eSewa INITIATE] Configuration:', {
-            'product_code': product_code,
+            'product_code': credentials.get_masked_product_code(),
             'payment_url': payment_url,
             'frontend_base_url': frontend_base_url,
+            'admin_email': admin_user.email,
             'is_test_environment': 'rc-epay' in payment_url
         })
 

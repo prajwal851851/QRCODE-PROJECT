@@ -20,6 +20,7 @@ import {
   Users,
   X,
   Package,
+  Shield,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -122,6 +123,13 @@ export function ResponsiveAdminSidebar({ children }: SidebarProps) {
       active: pathname === "/admin/users",
       permissions: ["users_view", "users_manage"],
     },
+    {
+      label: "Integrate eSewa",
+      icon: Shield,
+      href: "/admin/integrate-esewa",
+      active: pathname === "/admin/integrate-esewa",
+      permissions: ["admin_only"], // Only admins and super admins can access
+    },
     // {
     //   label: "Settings",
     //   icon: Settings,
@@ -145,9 +153,26 @@ export function ResponsiveAdminSidebar({ children }: SidebarProps) {
     // },
   ]
   
+  // Special check for admin-only features
+  const isAdminOnly = (permissions: string[]) => {
+    if (!userData) return false
+    
+    // Super admin and admin can access admin-only features
+    if (userData.role === 'super_admin' || userData.is_admin_or_super_admin) return true
+    
+    // Employees cannot access admin-only features
+    return false
+  }
+
   // Filter routes based on permissions
-  const filteredRoutes = routes.filter(route => hasAnyPermission(route.permissions))
-  .map(route => {
+  const filteredRoutes = routes.filter(route => {
+    // Special handling for admin-only items
+    if (route.permissions.includes('admin_only')) {
+      return isAdminOnly(route.permissions)
+    }
+    // Regular permission check for other items
+    return hasAnyPermission(route.permissions)
+  }).map(route => {
     // Also filter submenu items if they exist
     if (route.submenu) {
       return {

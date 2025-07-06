@@ -39,6 +39,8 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "esewa">("cash")
   const [diningOption, setDiningOption] = useState(initialDiningOption)
   const [step, setStep] = useState(0)
+  const [esewaAvailable, setEsewaAvailable] = useState(false)
+  const [loadingEsewaStatus, setLoadingEsewaStatus] = useState(true)
 
   // Sync with prop when dialog opens or prop changes
   useEffect(() => {
@@ -46,6 +48,62 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
       setDiningOption(initialDiningOption);
     }
   }, [isOpen, initialDiningOption]);
+
+  // Check eSewa credentials status when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      checkEsewaStatus();
+    }
+  }, [isOpen]);
+
+  const checkEsewaStatus = async () => {
+    try {
+      // Get tableUid or tableId from URL
+      const tableUid = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tableUid') : null;
+      const tableId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tableId') : null;
+      
+      // Build the URL with query parameters
+      let url = `${getApiUrl()}/api/admin/public-status/`;
+      const params = new URLSearchParams();
+      if (tableUid) {
+        params.append('tableUid', tableUid);
+      } else if (tableId) {
+        params.append('tableId', tableId);
+      }
+      
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setEsewaAvailable(data.has_secret_key)
+        // If eSewa is not available and it was selected, switch to cash
+        if (!data.has_secret_key && paymentMethod === 'esewa') {
+          setPaymentMethod('cash')
+        }
+      } else {
+        setEsewaAvailable(false)
+        if (paymentMethod === 'esewa') {
+          setPaymentMethod('cash')
+        }
+      }
+    } catch (error) {
+      setEsewaAvailable(false)
+      if (paymentMethod === 'esewa') {
+        setPaymentMethod('cash')
+      }
+    } finally {
+      setLoadingEsewaStatus(false)
+    }
+  }
 
   // Shared calculation helpers to avoid mismatch and rounding errors
   const calcSubtotal = (items: CartItem[]) => items.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
@@ -350,16 +408,38 @@ export function CheckoutDialog({ isOpen, onClose, cartItems, setCartItems, table
                         <img src="https://static.vecteezy.com/system/resources/previews/016/096/684/non_2x/nepal-currency-symbol-nepalese-rupee-icon-npr-sign-illustration-vector.jpg" alt="Nepalese Rupee" className="w-6 h-6 object-contain" />
                       </span>
                     </Label>
-              </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="esewa" id="esewa" className="peer" />
-                    <Label htmlFor="esewa" className="peer-checked:text-primary cursor-pointer text-gray-900 dark:text-white flex items-center gap-2">
-                      <span>eSewa</span>
-                      <span className="inline-flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-900 rounded shadow border border-gray-200 dark:border-gray-700">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5NUaV-BsO31dW21_y2-K6jHAxBzXftgi6xA&s" alt="eSewa" className="w-6 h-6 object-contain" />
-                      </span>
-                    </Label>
-            </div>
+                  </div>
+                  {loadingEsewaStatus ? (
+                    <div className="flex items-center gap-2 opacity-50">
+                      <RadioGroupItem value="esewa" id="esewa" className="peer" disabled />
+                      <Label htmlFor="esewa" className="peer-checked:text-primary cursor-pointer text-gray-400 dark:text-gray-500 flex items-center gap-2">
+                        <span>eSewa (Loading...)</span>
+                        <span className="inline-flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-900 rounded shadow border border-gray-200 dark:border-gray-700">
+                          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5NUaV-BsO31dW21_y2-K6jHAxBzXftgi6xA&s" alt="eSewa" className="w-6 h-6 object-contain" />
+                        </span>
+                      </Label>
+                    </div>
+                  ) : esewaAvailable ? (
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="esewa" id="esewa" className="peer" />
+                      <Label htmlFor="esewa" className="peer-checked:text-primary cursor-pointer text-gray-900 dark:text-white flex items-center gap-2">
+                        <span>eSewa</span>
+                        <span className="inline-flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-900 rounded shadow border border-gray-200 dark:border-gray-700">
+                          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5NUaV-BsO31dW21_y2-K6jHAxBzXftgi6xA&s" alt="eSewa" className="w-6 h-6 object-contain" />
+                        </span>
+                      </Label>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 opacity-50">
+                      <RadioGroupItem value="esewa" id="esewa" className="peer" disabled />
+                      <Label htmlFor="esewa" className="peer-checked:text-primary cursor-pointer text-gray-400 dark:text-gray-500 flex items-center gap-2">
+                        <span>eSewa (Not Available)</span>
+                        <span className="inline-flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-900 rounded shadow border border-gray-200 dark:border-gray-700">
+                          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5NUaV-BsO31dW21_y2-K6jHAxBzXftgi6xA&s" alt="eSewa" className="w-6 h-6 object-contain" />
+                        </span>
+                      </Label>
+                    </div>
+                  )}
                 </RadioGroup>
                 <div className="flex gap-2 mt-6">
                   <Button variant="outline" className="flex-1 rounded-full dark:bg-[#232a3a] dark:text-white" onClick={() => setStep(1)}>
