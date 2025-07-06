@@ -276,11 +276,12 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# eSewa Configuration - REMOVED: Each admin now manages their own credentials through the admin panel
-# ESEWA_PAYMENT_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"  # Legacy - removed
-# ESEWA_PRODUCT_CODE = "EPAYTEST"  # Legacy - removed  
-# ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q("  # Legacy - removed
+# eSewa Configuration
+ESEWA_PAYMENT_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"  # Use https://epay.esewa.com.np/api/epay/main/v2/form for production
+ESEWA_PRODUCT_CODE = "EPAYTEST"  # Replace with your actual product code in production
+ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q("  # Replace with your actual secret key in production
 FRONTEND_BASE_URL = "https://qr-menu-code.netlify.app"
 
-# eSewa Encryption Key - Will auto-generate if not set (recommended for production)
-# ESEWA_ENCRYPTION_KEY = "XRUD8vcvWWPP7x95sRaLTSiiMIesLlJ8tF-gpM02Ewg="  # Removed for production
+# eSewa Encryption Key (will be auto-generated if not set)
+# For production, set this as an environment variable
+ESEWA_ENCRYPTION_KEY = ""  # Fixed key for development
