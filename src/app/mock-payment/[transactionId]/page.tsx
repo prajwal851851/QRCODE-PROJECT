@@ -18,6 +18,14 @@ interface MockTransaction {
 export default function MockPaymentPage() {
   const params = useParams()
   const router = useRouter()
+  
+  // Handle case where params might be null
+  if (!params || !params.transactionId) {
+    // Redirect to menu if no transaction ID
+    router.push('/menu')
+    return null
+  }
+  
   const transactionId = params.transactionId as string
   
   const [transaction, setTransaction] = useState<MockTransaction | null>(null)
