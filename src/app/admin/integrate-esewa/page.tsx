@@ -34,6 +34,9 @@ interface ViewCredentials {
 }
 
 export default function IntegrateEsewaPage() {
+  // SECURITY WARNING: Never log or expose eSewa credentials in the frontend
+  // All sensitive data should only be sent to the backend and never stored or logged in the frontend
+  
   // All hooks must be called at the top level, before any conditional returns
   const { toast } = useToast()
   const { userData, loading } = usePermissions()
@@ -41,7 +44,7 @@ export default function IntegrateEsewaPage() {
   const router = useRouter()
 
   // All useState hooks
-  const [credentials, setCredentials] = useState({
+  const [credentials, setCredentials] = useState<EsewaCredentials>({
     product_code: "",
     secret_key: "",
     account_name: "",
@@ -49,7 +52,7 @@ export default function IntegrateEsewaPage() {
     last_updated: "",
     masked_product_code: "",
     is_active: false,
-    environment: "test" as 'test' | 'production',
+    environment: "test",
   })
   
   const [isSaving, setIsSaving] = useState(false)
@@ -239,18 +242,25 @@ export default function IntegrateEsewaPage() {
     setIsSaving(true)
     try {
       const token = localStorage.getItem("adminAccessToken")
+      
+      // Create request body with sensitive data
+      const requestBody = {
+        product_code: credentials.product_code,
+        secret_key: credentials.secret_key,
+        display_name: credentials.account_name,
+        environment: credentials.environment,
+      }
+      
+      // SECURITY: Never log sensitive data
+      console.log('Saving eSewa credentials for environment:', credentials.environment)
+      
       const response = await fetch("/api/admin/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          product_code: credentials.product_code,
-          secret_key: credentials.secret_key,
-          display_name: credentials.account_name,
-          environment: credentials.environment,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (response.ok) {
