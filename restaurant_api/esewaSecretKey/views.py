@@ -126,7 +126,7 @@ def validate_esewa_credentials(product_code, secret_key, environment='production
             return False, "❌ Validation timeout. Please check your internet connection and try again."
         except requests.exceptions.ConnectionError:
             return False, "❌ Connection error. Please check your internet connection and try again."
-        except Exception as e:
+    except Exception as e:
             return False, f"❌ Validation error: {str(e)}"
             
     except Exception as e:
@@ -148,13 +148,13 @@ class EsewaCredentialsView(generics.RetrieveUpdateAPIView):
         # Get the most recently updated credentials for this admin
         credentials = EsewaCredentials.objects.filter(admin=user).order_by('-updated_at').first()
         return credentials
-
+    
     def get(self, request, *args, **kwargs):
         """Get masked credentials"""
         credentials = self.get_object()
         serializer = self.get_serializer(credentials)
         return Response(serializer.data)
-
+    
     def post(self, request, *args, **kwargs):
         user = self.request.user
         # Try to get existing credentials for this admin
@@ -170,7 +170,7 @@ class EsewaCredentialsView(generics.RetrieveUpdateAPIView):
         # Deactivate all other credentials for this admin (should only be one, but for safety)
         EsewaCredentials.objects.filter(admin=user).exclude(id=serializer.instance.id).update(is_active=False)
         return Response(self.get_serializer(serializer.instance).data)
-
+    
     def put(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)
 
@@ -465,8 +465,8 @@ def verify_otp_and_view_credentials(request):
             request.session['otp_verified_timestamp'] = timezone.now().isoformat()
             request.session['verification_token'] = verification_token
             
-            request.session.modified = True
-            request.session.save()
+        request.session.modified = True
+        request.session.save()
         except Exception as e:
             print(f"Session storage failed: {e}")
         
@@ -735,9 +735,9 @@ def display_credentials_securely(request):
                 
             except EsewaVerificationToken.DoesNotExist:
                 print("  No database verification found")
-                return Response({
+            return Response({
                     'error': 'OTP verification not found. Please verify OTP again.'
-                }, status=status.HTTP_401_UNAUTHORIZED)
+            }, status=status.HTTP_401_UNAUTHORIZED)
         
         # Check if verification is still valid (5 minutes)
         if otp_timestamp:

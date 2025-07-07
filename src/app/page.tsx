@@ -7,6 +7,7 @@ import Image from "next/image"
 import { LanguageSelector } from "@/components/language-selector"
 import { useLoading } from "@/contexts/LoadingContext"
 import LoadingOverlay from "@/components/LoadingOverlay"
+import { PricingSection } from "@/components/PricingSection"
 
 export default function Home() {
   const { show, setShow } = useLoading()
@@ -118,6 +119,9 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Pricing Section */}
+      <PricingSection />
 
       <footer className="bg-orange-800 text-white py-8 mt-20">
         <div className="container mx-auto px-4">

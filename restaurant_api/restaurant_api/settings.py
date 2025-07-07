@@ -24,15 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production se
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-
+SECRET_KEY = 'django-insecure-#=3&&9swn_=(f65qgi5ty3rmjx2&r+!1)pjkx45kix!hie%03!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False').strip().lower() == 'true'
+DEBUG = True
 
-
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '').split(',') if host.strip()]
-
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -98,10 +95,17 @@ WSGI_APPLICATION = 'restaurant_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-import dj_database_url
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get("DATABASE_URL"))
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'qr_menu_db',           # The name of your PostgreSQL database
+        'USER': 'postgre',           # Your PostgreSQL username
+        'PASSWORD': 'Momlove123@',   # Your PostgreSQL password
+        'HOST': 'localhost',              # Or use the IP address, e.g., '127.0.0.1'
+        'PORT': '5432',                   # Default PostgreSQL port
+    }
 }
+
 
 
 
