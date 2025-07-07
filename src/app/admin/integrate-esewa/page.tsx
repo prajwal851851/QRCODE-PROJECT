@@ -205,10 +205,10 @@ export default function IntegrateEsewaPage() {
       const productCode = credentials.product_code.toUpperCase()
       
       // Check for test credentials in production
-      if (productCode.startsWith('EP_TEST') || productCode.includes('TEST') || productCode.includes('DEMO')) {
+      if (productCode.includes('TEST') || productCode.includes('DEMO')) {
         toast({
           title: "Invalid Production Credentials",
-          description: "Production environment cannot use test credentials (EP_TEST, TEST, DEMO). Please use your real eSewa production credentials.",
+          description: "Production environment cannot use test credentials. Please use your real eSewa production credentials.",
           variant: "destructive",
         })
         return
@@ -739,7 +739,7 @@ export default function IntegrateEsewaPage() {
                     <li>Production Secret Key</li>
                     <li>All payments go to your eSewa account</li>
                   </ul>
-                  <strong className="text-red-900 dark:text-red-100">Do NOT use test credentials (EP_TEST) in production!</strong>
+                  <strong className="text-red-900 dark:text-red-100">Do NOT use test credentials in production!</strong>
                 </AlertDescription>
               </Alert>
             )}
@@ -750,7 +750,7 @@ export default function IntegrateEsewaPage() {
                 id="product_code"
                 name="esewa_product_code_entry"
                 type="text"
-                placeholder={credentials.environment === 'production' ? "e.g., EPAY123456" : "e.g., EP_TEST123456"}
+                placeholder={credentials.environment === 'production' ? "e.g., EPAY123456" : "e.g., EPAY123456"}
                 value={credentials.product_code}
                 onChange={(e) => setCredentials(prev => ({ ...prev, product_code: e.target.value }))}
                 className="font-mono dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
@@ -763,7 +763,7 @@ export default function IntegrateEsewaPage() {
                 Your unique product code from eSewa business account 
                 {credentials.environment === 'production' 
                   ? ' (production codes start with EPAY)'
-                  : ' (test codes start with EP_TEST)'
+                  : ' (must start with EPAY)'
                 }
               </p>
             </div>

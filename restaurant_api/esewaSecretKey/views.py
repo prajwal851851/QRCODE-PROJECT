@@ -25,7 +25,7 @@ from .serializers import (
 from UserRole.models import CustomUser
 
 
-def validate_esewa_credentials(product_code, secret_key, environment='test'):
+def validate_esewa_credentials(product_code, secret_key, environment='production'):
     """
     Validate eSewa credentials by making a test API call
     Returns (is_valid, error_message)
@@ -65,29 +65,10 @@ def validate_esewa_credentials(product_code, secret_key, environment='test'):
         if not secret_key or len(secret_key) < 8:
             return False, "❌ Secret key is too short. Secret key must be at least 8 characters long."
         
-        # Test signature generation (if this fails, credentials are invalid)
-        try:
-            test_signature = generate_signature(secret_key, data_to_sign)
-            if not test_signature:
-                return False, "❌ Invalid secret key. Unable to generate signature. Please check your secret key format."
-        except Exception as e:
-            return False, f"❌ Invalid credentials. Signature generation failed: {str(e)}"
-        
-        # Environment-specific validation
+        # Production validation - must start with EPAY
         if environment == 'production':
-            # Production validation - must start with EPAY (not EP_TEST)
             if not product_code.upper().startswith('EPAY'):
-                return False, f"❌ Production product code '{product_code}' must start with 'EPAY' (eSewa production format). Please use your real eSewa production credentials."
-            if product_code.upper().startswith('EP_TEST'):
-                return False, f"❌ Production environment cannot use test product codes. '{product_code}' is a test code. Please use your real eSewa production credentials."
-            
-            # Additional production validation - check for common test patterns
-            if 'TEST' in product_code.upper() or 'DEMO' in product_code.upper():
-                return False, f"❌ Production environment cannot use test or demo credentials. '{product_code}' contains test/demo indicators. Please use your real eSewa production credentials."
-        else:
-            # Test validation - can start with EPAY or EP_TEST
-            if not product_code.upper().startswith(('EPAY', 'EP_TEST')):
-                return False, f"❌ Test product code '{product_code}' should start with 'EPAY' or 'EP_TEST' (eSewa test format)."
+                return False, f"❌ Production product code '{product_code}' must start with 'EPAY' (eSewa production format)."
         
         # ACTUAL eSewa API validation - make a real test call
         try:
@@ -121,44 +102,35 @@ def validate_esewa_credentials(product_code, secret_key, environment='test'):
                 timeout=10  # 10 second timeout
             )
             
-            # Check response status and content
+            # Check response status
             if response.status_code == 200:
-                # If we get a 200 response, credentials might be valid
-                # But we need to check if eSewa actually accepted our request
-                response_text = response.text.lower()
-                
-                # Check for common eSewa error indicators
-                error_indicators = [
-                    'invalid product code',
-                    'invalid signature',
-                    'authentication failed',
-                    'invalid credentials',
-                    'product code not found',
-                    'merchant not found',
-                    'unauthorized',
-                    'access denied'
-                ]
-                
-                for error in error_indicators:
-                    if error in response_text:
-                        return False, f"❌ Invalid eSewa credentials detected! The product code '{product_code}' or secret key is not valid. Please check your eSewa business account credentials and ensure they are correct."
-                
-                # If no errors found, credentials appear valid
-                return True, f"✅ Credentials validated successfully with eSewa {environment} environment."
+                # Success - credentials are valid
+                return True, "✅ Credentials validated successfully!"
+            elif response.status_code == 400:
+                # Bad request - might be invalid credentials
+                try:
+                    error_data = response.json()
+                    error_message = error_data.get('error_message', 'Unknown error')
+                    return False, f"❌ Invalid credentials: {error_message}"
+                except:
+                    return False, "❌ Invalid credentials: Bad request from eSewa"
+            elif response.status_code == 401:
+                return False, "❌ Invalid credentials: Unauthorized"
+            elif response.status_code == 403:
+                return False, "❌ Invalid credentials: Forbidden"
             else:
-                # If we get a non-200 response, credentials are likely invalid
-                return False, f"❌ Invalid eSewa credentials! Server returned status {response.status_code}. The product code '{product_code}' or secret key is not recognized by eSewa. Please verify your credentials from your eSewa business account."
+                # Other status codes - might be temporary issues
+                return True, f"✅ Credentials appear valid (Status: {response.status_code})"
                 
-        except requests.exceptions.RequestException as e:
-            # Network error - we can't validate, but we'll allow it with a warning
-            print(f"Warning: Could not validate credentials with eSewa due to network error: {str(e)}")
-            return True, f"⚠️ Credentials format is valid, but could not verify with eSewa server due to network issues. Please ensure your credentials are correct and try again later."
-        
-        # If we reach here, credentials appear valid
-        return True, f"Credentials validated successfully for {environment} environment."
-        
+        except requests.exceptions.Timeout:
+            return False, "❌ Validation timeout. Please check your internet connection and try again."
+        except requests.exceptions.ConnectionError:
+            return False, "❌ Connection error. Please check your internet connection and try again."
+        except Exception as e:
+            return False, f"❌ Validation error: {str(e)}"
+            
     except Exception as e:
-        return False, f"❌ Validation failed due to an unexpected error: {str(e)}. Please check your credentials and try again."
+        return False, f"❌ Validation failed: {str(e)}"
 
 
 class EsewaCredentialsView(generics.RetrieveUpdateAPIView):

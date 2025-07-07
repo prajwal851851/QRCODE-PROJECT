@@ -1,155 +1,76 @@
-# 🧪 Quick Testing Guide - eSewa Payment Flow
+# Quick Testing Guide for eSewa Integration
 
-## **Option 1: Use eSewa Test Credentials (Recommended)**
+## 🚀 **Production Setup Guide**
 
-### **Step 1: Save Test Credentials**
-1. Go to Admin Dashboard → Integrate eSewa
-2. Enter these **test credentials**:
-   ```
-   Product Code: EPAYTEST
-   Secret Key: 8gBm/:&EnhH.1/q
-   Account Name: Test Restaurant
-   Environment: Test
-   ```
-3. Click "Save Credentials"
+### **Step 1: Configure eSewa Credentials**
+
+1. **Get Real eSewa Business Account:**
+   - Sign up for eSewa business account at https://esewa.com.np
+   - Complete business verification process
+   - Get your production credentials
+
+2. **Configure in Admin Panel:**
+   - Go to Admin Panel → eSewa Integration
+   - Set Environment to "Production"
+   - Enter your real eSewa Product Code (starts with EPAY)
+   - Enter your real eSewa Secret Key
+   - Save and enable the configuration
 
 ### **Step 2: Test Payment Flow**
-1. Go to Menu page (scan QR code or visit `/table/[id]`)
-2. Add items to cart
-3. Click "Pay with eSewa"
-4. You'll be redirected to eSewa test environment
-5. Use test card: `4242 4242 4242 4242`
-6. Complete payment
 
----
+1. **Create Test Order:**
+   - Scan QR code or access menu
+   - Add items to cart
+   - Proceed to checkout
 
-## **Option 2: Use Mock Payment System (No eSewa Required)**
+2. **Complete Payment:**
+   - Select "Pay with eSewa"
+   - Complete payment on eSewa dashboard
+   - Verify successful redirect
 
-### **Step 1: Enable Testing Mode**
-1. Go to Admin Dashboard → Integrate eSewa
-2. Check "Enable Testing Mode"
-3. Save any dummy credentials (validation will be bypassed)
+3. **Verify Transaction:**
+   - Check order status
+   - Verify payment in admin panel
+   - Confirm money received in eSewa account
 
-### **Step 2: Test Mock Payment**
-1. Go to Menu page
-2. Add items to cart
-3. Click "Pay with eSewa"
-4. You'll see a **Mock Payment Interface**
-5. Choose:
-   - ✅ **Successful Payment**
-   - ❌ **Failed Payment** 
-   - ⚠️ **Cancelled Payment**
+## 🔧 **Troubleshooting**
 
----
+### **Common Issues:**
 
-## **Option 3: Test Different Scenarios**
+1. **"eSewa not configured" error:**
+   - Ensure eSewa credentials are saved and enabled
+   - Check that environment is set to "Production"
 
-### **Test 1: Successful Payment Flow**
-1. Complete payment successfully
-2. Verify order status updates
-3. Check admin dashboard
-4. Verify email notifications
+2. **Payment not completing:**
+   - Verify eSewa credentials are correct
+   - Check internet connection
+   - Ensure eSewa account is active
 
-### **Test 2: Failed Payment Flow**
-1. Simulate payment failure
-2. Verify error handling
-3. Check order status
-4. Test retry functionality
+3. **Wrong admin receiving payment:**
+   - Verify table admin assignments
+   - Check eSewa credentials for correct admin
 
-### **Test 3: Cancelled Payment Flow**
-1. Cancel payment
-2. Verify return to menu
-3. Check cart state
-4. Test re-payment
+### **Testing Checklist:**
 
----
+- [ ] eSewa credentials configured
+- [ ] Environment set to "Production"
+- [ ] eSewa integration enabled
+- [ ] Table admin assignments correct
+- [ ] Payment flow working
+- [ ] Success/failure redirects working
+- [ ] Transaction records created
+- [ ] Money received in eSewa account
 
-## **🔧 Backend Testing**
+## 📞 **Support**
 
-### **Test Credential Validation**
-```bash
-# Test with valid credentials
-curl -X POST http://localhost:8000/api/admin/credentials/ \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "product_code": "EPAYTEST",
-    "secret_key": "8gBm/:&EnhH.1/q"
-  }'
+If you encounter issues:
+- Check admin panel for error messages
+- Verify eSewa account status
+- Contact support at qrmenu851@gmail.com
 
-# Test with invalid credentials
-curl -X POST http://localhost:8000/api/admin/credentials/ \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "product_code": "INVALID",
-    "secret_key": "wrong"
-  }'
-```
+## ⚠️ **Important Notes**
 
-### **Test Payment Status**
-```bash
-# Check if credentials are configured
-curl http://localhost:8000/api/admin/credentials/status/ \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
----
-
-## **📱 Frontend Testing**
-
-### **Test Credential Management**
-1. ✅ Save valid credentials
-2. ❌ Try to save invalid credentials
-3. 🔍 View masked credentials
-4. 🔐 Verify with password + OTP
-5. 🗑️ Clear credentials
-
-### **Test Payment UI**
-1. ✅ Show "Pay with eSewa" when configured
-2. ❌ Hide "Pay with eSewa" when not configured
-3. 🔄 Loading states
-4. ⚠️ Error handling
-5. ✅ Success/failure pages
-
----
-
-## **🚀 Production Testing**
-
-When you get real eSewa credentials:
-
-1. **Update Credentials:**
-   ```
-   Product Code: YOUR_REAL_PRODUCT_CODE
-   Secret Key: YOUR_REAL_SECRET_KEY
-   Environment: Production
-   ```
-
-2. **Test in Production:**
-   - Use real eSewa environment
-   - Test with small amounts first
-   - Verify merchant name display
-   - Check payment routing
-
----
-
-## **📞 Support**
-
-- **Email:** qrmenu851@gmail.com
-- **Test Environment:** https://rc-epay.esewa.com.np
-- **Documentation:** eSewa Developer Portal
-
----
-
-## **✅ Testing Checklist**
-
-- [ ] Credential validation works
-- [ ] Payment initiation works
-- [ ] Success callback works
-- [ ] Failure callback works
-- [ ] Order status updates
-- [ ] Admin dashboard updates
-- [ ] Email notifications work
-- [ ] Error handling works
-- [ ] Loading states work
-- [ ] Mobile responsiveness 
+- **Production environment processes real money**
+- **Test thoroughly before going live**
+- **Keep eSewa credentials secure**
+- **Monitor transactions regularly** 

@@ -121,12 +121,6 @@ class EsewaCredentialsSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         "Production environment cannot use test product codes (EP_TEST). Please use your real eSewa production credentials."
                     )
-            else:
-                # Test validation - can start with EPAY or EP_TEST
-                if not value.upper().startswith(('EPAY', 'EP_TEST')):
-                    raise serializers.ValidationError(
-                        "Test product code should start with 'EPAY' or 'EP_TEST' (eSewa test format)."
-                    )
         
         return value
     

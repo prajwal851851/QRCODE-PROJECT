@@ -1,45 +1,35 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Loader2, CheckCircle, XCircle, CreditCard, AlertCircle } from "lucide-react"
+import { useEffect, useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 
 interface MockTransaction {
+  id: string
   order_id: string
   amount: number
-  product_code: string
-  status: string
+  status: 'PENDING' | 'COMPLETED' | 'FAILED'
   created_at: string
 }
 
 export default function MockPaymentPage() {
-  const params = useParams()
   const router = useRouter()
-  
-  // Handle case where params might be null
-  if (!params || !params.transactionId) {
-    // Redirect to menu if no transaction ID
-    router.push('/menu')
-    return null
-  }
-  
+  const params = useParams()
   const transactionId = params.transactionId as string
   
   const [transaction, setTransaction] = useState<MockTransaction | null>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
-  const [result, setResult] = useState<'success' | 'failure' | 'cancelled' | null>(null)
 
   useEffect(() => {
-    // Simulate loading transaction details
+    // Simulate loading transaction data
     setTimeout(() => {
       setTransaction({
-        order_id: transactionId.split('_')[1] || 'UNKNOWN',
-        amount: 1500, // Mock amount
-        product_code: 'EPAYTEST',
+        id: transactionId,
+        order_id: `ORD-${Date.now()}`,
+        amount: 100,
         status: 'PENDING',
         created_at: new Date().toISOString()
       })
@@ -47,75 +37,61 @@ export default function MockPaymentPage() {
     }, 1000)
   }, [transactionId])
 
-  const handlePayment = async (status: 'success' | 'failure' | 'cancelled') => {
+  const handlePaymentSuccess = async () => {
     setProcessing(true)
     
     // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Update transaction status
+    setTransaction(prev => prev ? { ...prev, status: 'COMPLETED' } : null)
+    
+    // Redirect to success page
     setTimeout(() => {
-      setResult(status)
-      setProcessing(false)
-      
-      // Redirect after showing result
-      setTimeout(() => {
-        if (status === 'success') {
-          router.push('/esewa/success')
-        } else if (status === 'failure') {
-          router.push('/esewa/failure')
-        } else {
-          router.push('/menu/payment-cancelled')
-        }
-      }, 2000)
-    }, 2000)
+      router.push(`/esewa/success?transaction_uuid=${transactionId}&status=COMPLETE`)
+    }, 1000)
+  }
+
+  const handlePaymentFailure = async () => {
+    setProcessing(true)
+    
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Update transaction status
+    setTransaction(prev => prev ? { ...prev, status: 'FAILED' } : null)
+    
+    // Redirect to failure page
+    setTimeout(() => {
+      router.push(`/esewa/failure?transaction_uuid=${transactionId}&status=FAILED`)
+    }, 1000)
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600 dark:text-gray-400">Loading payment details...</p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="w-[400px]">
+          <CardHeader>
+            <CardTitle>Loading Payment</CardTitle>
+            <CardDescription>Please wait...</CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     )
   }
 
-  if (result) {
+  if (!transaction) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            {result === 'success' && (
-              <>
-                <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                <CardTitle className="text-green-600">Payment Successful!</CardTitle>
-                <CardDescription>
-                  Your payment has been processed successfully.
-                </CardDescription>
-              </>
-            )}
-            {result === 'failure' && (
-              <>
-                <XCircle className="h-16 w-16 text-red-600 mx-auto mb-4" />
-                <CardTitle className="text-red-600">Payment Failed</CardTitle>
-                <CardDescription>
-                  Your payment could not be processed. Please try again.
-                </CardDescription>
-              </>
-            )}
-            {result === 'cancelled' && (
-              <>
-                <AlertCircle className="h-16 w-16 text-yellow-600 mx-auto mb-4" />
-                <CardTitle className="text-yellow-600">Payment Cancelled</CardTitle>
-                <CardDescription>
-                  You cancelled the payment. No charges were made.
-                </CardDescription>
-              </>
-            )}
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="w-[400px]">
+          <CardHeader>
+            <CardTitle className="text-red-600">Transaction Not Found</CardTitle>
+            <CardDescription>The payment transaction could not be found.</CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Redirecting you back to the restaurant...
-            </p>
+          <CardContent>
+            <Button onClick={() => router.push('/menu')} className="w-full">
+              Return to Menu
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -123,95 +99,116 @@ export default function MockPaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-md mx-auto">
-        <Card className="shadow-lg">
-          <CardHeader className="text-center border-b">
-            <div className="flex items-center justify-center mb-4">
-              <CreditCard className="h-8 w-8 text-blue-600 mr-2" />
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Mock eSewa Payment
-              </h1>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <Card className="w-[400px]">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5 text-blue-500" />
+            Mock Payment Gateway
+          </CardTitle>
+          <CardDescription>
+            This is a mock payment gateway for testing purposes.
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Transaction ID:</span>
+              <span className="text-sm font-mono">{transaction.id}</span>
             </div>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              This is a test payment interface for development purposes
-            </CardDescription>
-          </CardHeader>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Order ID:</span>
+              <span className="text-sm font-mono">{transaction.order_id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Amount:</span>
+              <span className="text-sm font-semibold">Rs. {transaction.amount}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Status:</span>
+              <span className={`text-sm font-medium ${
+                transaction.status === 'COMPLETED' ? 'text-green-600' :
+                transaction.status === 'FAILED' ? 'text-red-600' :
+                'text-blue-600'
+              }`}>
+                {transaction.status}
+              </span>
+            </div>
+          </div>
 
-          <CardContent className="p-6">
-            {transaction && (
-              <div className="space-y-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
-                    <strong>Transaction ID:</strong> {transactionId}
-                  </p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
-                    <strong>Order ID:</strong> {transaction.order_id}
-                  </p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Amount:</strong> NPR {transaction.amount}
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    Test Payment Options:
-                  </h3>
-                  
-                  <Button
-                    onClick={() => handlePayment('success')}
-                    disabled={processing}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    {processing ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                    )}
-                    Simulate Successful Payment
-                  </Button>
-
-                  <Button
-                    onClick={() => handlePayment('failure')}
-                    disabled={processing}
-                    variant="destructive"
-                    className="w-full"
-                  >
-                    {processing ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <XCircle className="h-4 w-4 mr-2" />
-                    )}
-                    Simulate Failed Payment
-                  </Button>
-
-                  <Button
-                    onClick={() => handlePayment('cancelled')}
-                    disabled={processing}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    {processing ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 mr-2" />
-                    )}
-                    Cancel Payment
-                  </Button>
-                </div>
-
-                <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    <strong>Note:</strong> This is a mock payment interface for testing. 
-                    No real money will be charged. Choose an option above to simulate 
-                    different payment scenarios.
-                  </p>
-                </div>
+          {transaction.status === 'PENDING' && (
+            <div className="space-y-3">
+              <div className="text-sm text-gray-600">
+                Choose an action to simulate the payment result:
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              
+              <Button 
+                onClick={handlePaymentSuccess}
+                disabled={processing}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                {processing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Simulate Successful Payment
+                  </>
+                )}
+              </Button>
+              
+              <Button 
+                onClick={handlePaymentFailure}
+                disabled={processing}
+                variant="destructive"
+                className="w-full"
+              >
+                {processing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Simulate Failed Payment
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {transaction.status === 'COMPLETED' && (
+            <div className="text-center space-y-3">
+              <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
+              <div className="text-green-600 font-medium">Payment Successful!</div>
+              <div className="text-sm text-gray-600">Redirecting to success page...</div>
+            </div>
+          )}
+
+          {transaction.status === 'FAILED' && (
+            <div className="text-center space-y-3">
+              <XCircle className="h-12 w-12 text-red-500 mx-auto" />
+              <div className="text-red-600 font-medium">Payment Failed!</div>
+              <div className="text-sm text-gray-600">Redirecting to failure page...</div>
+            </div>
+          )}
+
+          <div className="pt-4 border-t">
+            <Button 
+              onClick={() => router.push('/menu')} 
+              variant="outline" 
+              className="w-full"
+            >
+              Cancel and Return to Menu
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 } 

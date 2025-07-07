@@ -1,120 +1,130 @@
 # eSewa Payment Testing Guide
 
-## 🧪 **Testing Without Real Credentials**
+## 🚀 **Production Testing Guide**
 
-### **Option 1: Use eSewa Official Test Credentials**
+### **Prerequisites**
 
-eSewa provides test credentials for development:
+Before testing, ensure you have:
+- Real eSewa business account
+- Production eSewa credentials
+- Admin panel access
+- Test orders ready
 
-**Test Environment:**
-- **Product Code:** `EPAYTEST`
-- **Secret Key:** `8gBm/:&EnhH.1/q`
-- **URL:** `https://rc-epay.esewa.com.np/api/epay/main/v2/form`
+### **Step 1: Configure Production Credentials**
 
-**Test Card Details:**
-- **Card Number:** `4242 4242 4242 4242`
-- **Expiry:** Any future date
-- **CVV:** Any 3 digits
-- **OTP:** `123456`
+1. **Get Real eSewa Credentials:**
+   - Sign up at https://esewa.com.np
+   - Complete business verification
+   - Get your production Product Code (starts with EPAY)
+   - Get your production Secret Key
 
-### **Option 2: Create Mock Payment Flow**
+2. **Configure in Admin Panel:**
+   - Go to Admin Panel → eSewa Integration
+   - Set Environment to "Production"
+   - Enter your real Product Code
+   - Enter your real Secret Key
+   - Save and enable
 
-For development without any eSewa integration:
+### **Step 2: Test Payment Flow**
 
-1. **Frontend Mock:** Simulate payment flow in UI
-2. **Backend Mock:** Return success/failure responses
-3. **Database:** Store mock transaction records
+1. **Create Test Order:**
+   - Scan QR code or access menu
+   - Add items to cart
+   - Proceed to checkout
 
-### **Option 3: Use eSewa Sandbox (If Available)**
-
-Some payment gateways offer sandbox environments.
-
-## 🔧 **Implementation Steps**
-
-### **Step 1: Test with eSewa Test Credentials**
-
-1. **Save Test Credentials:**
-   ```
-   Product Code: EPAYTEST
-   Secret Key: 8gBm/:&EnhH.1/q
-   Environment: Test
-   ```
-
-2. **Test Payment Flow:**
-   - Create an order
+2. **Complete Payment:**
    - Select "Pay with eSewa"
-   - Complete test payment
-   - Verify success/failure handling
+   - Complete payment on eSewa dashboard
+   - Verify successful redirect
 
-### **Step 2: Create Mock Payment System**
+3. **Verify Transaction:**
+   - Check order status
+   - Verify payment in admin panel
+   - Confirm money received in eSewa account
 
-If you want to test without eSewa at all:
+## 🔧 **Testing Scenarios**
 
-```python
-# Mock payment response
-def mock_esewa_payment(order_id, amount):
-    return {
-        'success': True,
-        'transaction_id': f'mock_{order_id}_{int(time.time())}',
-        'amount': amount,
-        'status': 'COMPLETE'
-    }
-```
+### **Scenario 1: Successful Payment**
+- Complete payment successfully
+- Verify order status updates to "paid"
+- Check transaction record created
+- Confirm money received
 
-### **Step 3: Test Different Scenarios**
+### **Scenario 2: Failed Payment**
+- Simulate payment failure
+- Verify error handling
+- Check order status remains "pending"
+- Test retry functionality
 
-1. **Successful Payment**
-2. **Failed Payment**
-3. **Cancelled Payment**
-4. **Network Errors**
-5. **Invalid Credentials**
+### **Scenario 3: Cancelled Payment**
+- Cancel payment on eSewa
+- Verify return to menu
+- Check cart state preserved
+- Test re-payment
 
-## 🛡️ **Security Considerations**
+### **Scenario 4: Network Issues**
+- Test with poor connection
+- Verify timeout handling
+- Check error messages
+- Test retry mechanism
 
-### **Test Environment Only:**
-- Never use test credentials in production
-- Test credentials are publicly known
-- Real credentials must be kept secret
+## 🛡️ **Security Testing**
 
-### **Data Protection:**
-- Test data should be clearly marked
-- Don't mix test and production data
-- Use separate databases for testing
+### **Credential Security**
+- Verify credentials are encrypted
+- Test credential validation
+- Check access controls
+- Verify audit logging
 
-## 📋 **Testing Checklist**
+### **Payment Security**
+- Test signature validation
+- Verify transaction integrity
+- Check fraud prevention
+- Test error handling
 
-### **Frontend Testing:**
-- [ ] Credentials form validation
-- [ ] Payment button visibility
-- [ ] Loading states
-- [ ] Error handling
-- [ ] Success/failure pages
+## 📊 **Monitoring & Verification**
 
-### **Backend Testing:**
-- [ ] Credential validation
-- [ ] Payment initiation
-- [ ] Callback handling
-- [ ] Database updates
-- [ ] Audit logging
+### **Admin Dashboard**
+- Check transaction logs
+- Verify payment status
+- Monitor error rates
+- Review audit trails
 
-### **Integration Testing:**
-- [ ] End-to-end payment flow
-- [ ] Order status updates
-- [ ] Email notifications
-- [ ] Admin dashboard updates
+### **eSewa Dashboard**
+- Verify payments received
+- Check transaction details
+- Monitor settlement
+- Review reports
 
-## 🚀 **Getting Real Credentials**
+## ⚠️ **Important Notes**
 
-When ready for production:
+### **Production Environment**
+- **Real money transactions**
+- **No test credentials allowed**
+- **Proper error handling required**
+- **Security measures active**
 
-1. **Contact eSewa:** Apply for business account
-2. **Provide Documents:** Business registration, bank details
-3. **Get Credentials:** Product code and secret key
-4. **Test in Production:** Use real credentials in test environment first
+### **Testing Best Practices**
+- Test with small amounts first
+- Verify all scenarios
+- Monitor closely
+- Document issues
 
 ## 📞 **Support**
 
-For testing issues:
-- **Email:** qrmenu851@gmail.com
-- **Documentation:** eSewa Developer Portal
-- **Test Environment:** https://rc-epay.esewa.com.np 
+For issues:
+- Check admin panel logs
+- Verify eSewa account status
+- Contact support: qrmenu851@gmail.com
+- Review eSewa documentation
+
+## ✅ **Production Checklist**
+
+- [ ] Real eSewa credentials configured
+- [ ] Environment set to "Production"
+- [ ] All payment flows tested
+- [ ] Error handling verified
+- [ ] Security measures active
+- [ ] Monitoring in place
+- [ ] Support contacts ready
+- [ ] Documentation updated 
