@@ -163,7 +163,7 @@ export function ResponsiveAdminSidebar({ children }: SidebarProps) {
     // Employees cannot access admin-only features
     return false
   }
-  
+
   // Filter routes based on permissions
   const filteredRoutes = routes.filter(route => {
     // Special handling for admin-only items
