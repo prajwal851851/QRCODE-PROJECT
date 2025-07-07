@@ -17,6 +17,26 @@ interface MockTransaction {
 export default function MockPaymentPage() {
   const router = useRouter()
   const params = useParams()
+  
+  // Handle case where params might be null
+  if (!params || !params.transactionId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="w-[400px]">
+          <CardHeader>
+            <CardTitle className="text-red-600">Invalid Transaction</CardTitle>
+            <CardDescription>Transaction ID is missing or invalid.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => router.push('/menu')} className="w-full">
+              Return to Menu
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+  
   const transactionId = params.transactionId as string
   
   const [transaction, setTransaction] = useState<MockTransaction | null>(null)
