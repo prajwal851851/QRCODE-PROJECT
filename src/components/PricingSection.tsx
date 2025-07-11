@@ -271,7 +271,7 @@ export function PricingSection() {
             features={freeTrialFeatures}
             buttonText="Start Free Trial"
             buttonVariant="outline"
-            onClick={handleStartTrial}
+            onButtonClick={handleStartTrial}
           />
 
           {/* Monthly Plan Card */}
@@ -282,7 +282,7 @@ export function PricingSection() {
             features={monthlyFeatures}
             buttonText="Subscribe Now"
             popular={true}
-            onClick={handleSubscribe}
+            onButtonClick={handleSubscribe}
           />
         </div>
 

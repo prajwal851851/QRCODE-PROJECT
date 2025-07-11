@@ -99,23 +99,12 @@ WSGI_APPLICATION = 'restaurant_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-<<<<<<< HEAD
 
 # PostgreSQL configuration (for production)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'qr_menu_db',           # The name of your PostgreSQL database
-        'USER': 'postgres',           # Your PostgreSQL username
-        'PASSWORD': 'Momlove123@',   # Your PostgreSQL password
-        'HOST': 'localhost',              # Or use the IP address, e.g., '127.0.0.1'
-        'PORT': '5432',                   # Default PostgreSQL port
-    }
-=======
+
 import dj_database_url
 DATABASES = {
     'default': dj_database_url.config(default=os.environ.get("DATABASE_URL"))
->>>>>>> f031b017459d87fcd3888a1c2548a7425abeb617
 }
 
 
