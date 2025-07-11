@@ -185,10 +185,28 @@ class LoginView(APIView):
                 
                 # Determine redirect URL based on user role and permissions
                 redirect_url = '/admin/'
-                
+
                 # For debugging, print user info
                 print(f"\n{'='*50}\nLOGIN for user: {user.username}\nIs Employee: {user.is_employee}\nRole: {user.role}\n")
-                
+
+                # --- ADMIN SUBSCRIPTION/PAYMENT CHECK ---
+                if not user.is_employee and (getattr(user, 'role', None) in ['super_admin', 'admin'] or getattr(user, 'is_superuser', False)):
+                    try:
+                        from Billing.models import Subscription, PaymentHistory
+                        subscription = getattr(user, 'subscription', None)
+                        if subscription and subscription.is_subscription_active:
+                            has_successful_payment = subscription.payment_history.filter(is_successful=True).exists()
+                            if has_successful_payment:
+                                redirect_url = '/admin/welcome/'
+                            else:
+                                redirect_url = '/admin/subscribe/'
+                        else:
+                            redirect_url = '/admin/subscribe/'
+                    except Exception as e:
+                        print(f"Error in admin subscription/payment check: {e}")
+                        redirect_url = '/admin/subscribe/'
+                # --- END ADMIN SUBSCRIPTION/PAYMENT CHECK ---
+
                 # If user is an employee, redirect to our custom admin with appropriate section
                 if user.is_employee:
                     # Change default redirect to our custom admin site

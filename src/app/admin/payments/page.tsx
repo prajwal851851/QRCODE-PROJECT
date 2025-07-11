@@ -91,7 +91,7 @@ export default function PaymentsPage() {
     try {
       const { accessToken } = await getAuthTokens();
       if (!accessToken) {
-        window.location.href = '/admin/login';
+        window.location.href = '/admin/login?redirect=' + encodeURIComponent('/admin/payments');
         return;
       }
 
@@ -851,7 +851,7 @@ export default function PaymentsPage() {
     setIsLoading(true);
     const { accessToken } = await getAuthTokens();
     if (!accessToken) {
-      window.location.href = '/admin/login';
+      window.location.href = '/admin/login?redirect=' + encodeURIComponent('/admin/payments');
       return;
     }
 
@@ -1023,7 +1023,7 @@ export default function PaymentsPage() {
             try {
               const { accessToken } = await getAuthTokens();
               if (!accessToken) {
-                window.location.href = '/admin/login';
+                window.location.href = '/admin/login?redirect=' + encodeURIComponent('/admin/payments');
                 return;
               }
 
@@ -1066,7 +1066,7 @@ export default function PaymentsPage() {
             try {
               const { accessToken } = await getAuthTokens();
               if (!accessToken) {
-                window.location.href = '/admin/login';
+                window.location.href = '/admin/login?redirect=' + encodeURIComponent('/admin/payments');
                 return;
               }
 

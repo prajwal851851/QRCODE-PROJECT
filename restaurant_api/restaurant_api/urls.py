@@ -36,6 +36,7 @@ urlpatterns = [
     path('api/payments/', include('payments.urls')),
     path('api/inventory/', include('InventoryManagement.urls')),
     path('api/admin/', include('esewaSecretKey.urls')),
+    path('api/billing/', include('Billing.urls')),  # 🧩 subscription and billing endpoints
 ]
 
 

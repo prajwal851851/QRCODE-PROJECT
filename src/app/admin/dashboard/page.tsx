@@ -20,6 +20,7 @@ import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/co
 import { motion, AnimatePresence } from "framer-motion"
 import { useLoading } from '@/contexts/LoadingContext'
 import { getApiUrl } from '@/lib/api-service'
+import { useRequireSubscription } from '@/hooks/useRequireSubscription';
 
 interface Review {
   order_id: number | string | null;
@@ -33,6 +34,7 @@ interface Review {
 } // Adjusted to match expected fields for guest and registered reviews
 
 export default function DashboardPage() {
+  useRequireSubscription();
   const { t, isReady } = useLanguage();
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)

@@ -38,9 +38,12 @@ function isValidImageUrl(url: string): boolean {
   }
 }
 
-// Helper to get the API base URL from environment variable
-export function getApiUrl() {
-  return process.env.NEXT_PUBLIC_API_URL || "https://qrcode-project-3.onrender.com";
+// Update getApiUrl to use production backend for billing endpoints
+export function getApiUrl(endpoint?: string) {
+  if (endpoint && endpoint.startsWith('/api/billing/')) {
+    return 'https://qrcode-project-3.onrender.com';
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 }
 
 // Fetch all menu items
@@ -448,9 +451,23 @@ export async function fetchWithAuth(url: string, options: any = {}) {
     }
   }
 
-  // If still unauthorized after refresh, logout
+  // If still unauthorized after refresh, check for token_not_valid in response body
   if (response.status === 401) {
-    logout();
+    try {
+      const data = await response.clone().json();
+      if (data.code === 'token_not_valid') {
+        localStorage.removeItem('adminAccessToken');
+        localStorage.removeItem('employeeAccessToken');
+        logout();
+        window.location.href = '/admin/login?expired=1';
+        return new Response(null, { status: 401 });
+      }
+    } catch (e) {
+      // fallback: just logout and redirect
+      logout();
+      window.location.href = '/admin/login?expired=1';
+      return new Response(null, { status: 401 });
+    }
   }
 
   return response;

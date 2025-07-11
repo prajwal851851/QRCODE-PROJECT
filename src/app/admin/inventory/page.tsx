@@ -20,8 +20,10 @@ import { useLoading } from '@/contexts/LoadingContext'
 import { CreateSupplierDialog } from "@/components/inventory/CreateSupplierDialog"
 import { getInventoryCategories } from '@/lib/api-service'
 import { getApiUrl } from '@/lib/api-service'
+import { useRequireSubscription } from '@/hooks/useRequireSubscription';
 
 export default function InventoryPage() {
+  useRequireSubscription();
   const { setShow } = useLoading();
   useEffect(() => { setShow(false); }, [setShow]);
 

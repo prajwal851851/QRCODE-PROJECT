@@ -43,6 +43,7 @@ import { useLoading } from '@/contexts/LoadingContext'
 import Select, { components } from 'react-select'
 import type { OptionProps, SingleValueProps } from 'react-select'
 import { getApiUrl } from '@/lib/api-service';
+import { useRequireSubscription } from '@/hooks/useRequireSubscription';
 
 interface MenuItem {
   id: number
@@ -116,6 +117,7 @@ const selectStyles = {
 };
 
 export default function MenuPage() {
+  useRequireSubscription();
   const deletedAttributesRef = useRef<Set<string>>(new Set());
   const deletedCategoriesRef = useRef<Set<number>>(new Set());
   const { setShow } = useLoading();

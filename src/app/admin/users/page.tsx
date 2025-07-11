@@ -101,7 +101,7 @@ export default function UsersPage() {
         
         if (!token) {
           console.error("No authentication token found");
-          window.location.href = '/admin/login';
+          window.location.href = '/admin/login?redirect=' + encodeURIComponent('/admin/users');
           return;
         }
 
@@ -115,7 +115,7 @@ export default function UsersPage() {
           if (Date.now() >= payload.exp * 1000) {
             console.error("Token has expired");
             localStorage.removeItem("adminAccessToken");
-            window.location.href = '/admin/login';
+            window.location.href = '/admin/login?redirect=' + encodeURIComponent('/admin/users');
             return;
           }
         }
@@ -182,7 +182,7 @@ export default function UsersPage() {
           if (response.status === 401) {
             console.error("Token is invalid or expired");
             localStorage.removeItem("adminAccessToken");
-            window.location.href = '/admin/login';
+            window.location.href = '/admin/login?redirect=' + encodeURIComponent('/admin/users');
             return;
           }
           

@@ -132,6 +132,24 @@ def initiate_payment(request):
                 # Store order details for later recreation
                 transaction.set_order_details(order_details)
                 print('[eSewa INITIATE] Stored order details for transaction:', transaction_uuid)
+
+                # Send confirmation email to the admin
+                from django.core.mail import send_mail
+                send_mail(
+                    subject='Your Esewa Payment Submission Received',
+                    message=f'Thank you for submitting your Esewa payment.\nYour Transaction ID: {transaction.transaction_uuid}',
+                    from_email=None,
+                    recipient_list=[admin_user.email],
+                    fail_silently=False,
+                )
+                # Send notification email to the owner
+                send_mail(
+                    subject=f'Admin Esewa Payment Notification: {admin_user.email}',
+                    message=f'Admin {admin_user.email} submitted a payment.\nEsewa Transaction ID: {transaction.transaction_uuid}',
+                    from_email=None,
+                    recipient_list=['qrmenu851@gmail.com'],
+                    fail_silently=False,
+                )
             except Exception as e:
                 print('[eSewa INITIATE] Error creating transaction:', str(e))
                 return Response({'error': 'Error creating transaction record'}, status=500)
@@ -174,6 +192,24 @@ def initiate_payment(request):
                     # Store order details for later recreation
                     transaction.set_order_details(order_details)
                     print('[eSewa INITIATE] Stored order details for existing order transaction:', transaction_uuid)
+
+                    # Send confirmation email to the admin
+                    from django.core.mail import send_mail
+                    send_mail(
+                        subject='Your Esewa Payment Submission Received',
+                        message=f'Thank you for submitting your Esewa payment.\nYour Transaction ID: {transaction.transaction_uuid}',
+                        from_email=None,
+                        recipient_list=[admin_user.email],
+                        fail_silently=False,
+                    )
+                    # Send notification email to the owner
+                    send_mail(
+                        subject=f'Admin Esewa Payment Notification: {admin_user.email}',
+                        message=f'Admin {admin_user.email} submitted a payment.\nEsewa Transaction ID: {transaction.transaction_uuid}',
+                        from_email=None,
+                        recipient_list=['qrmenu851@gmail.com'],
+                        fail_silently=False,
+                    )
                 except Exception as e:
                     print('[eSewa INITIATE] Error creating transaction:', str(e))
                     return Response({'error': 'Error creating transaction record'}, status=500)

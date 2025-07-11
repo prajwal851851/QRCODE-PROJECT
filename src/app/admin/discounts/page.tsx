@@ -29,8 +29,10 @@ import { MultiSelect } from "react-multi-select-component"
 import { fetchWithAuth } from '@/lib/api-service'
 import { useLoading } from '@/contexts/LoadingContext'
 import { getApiUrl } from '@/lib/api-service'
+import { useRequireSubscription } from '@/hooks/useRequireSubscription';
 
 export default function DiscountManagementPage() {
+  useRequireSubscription();
   const { setShow } = useLoading();
   useEffect(() => { setShow(false); }, [setShow]);
 

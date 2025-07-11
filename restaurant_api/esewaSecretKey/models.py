@@ -122,7 +122,7 @@ class EsewaCredentials(models.Model):
             return 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'
     
     def get_encryption_key(self):
-        """Get the encryption key from environment or generate one"""
+        """Get the encryption key from environment or settings"""
         # First try to get from environment variable
         key = os.environ.get('ESEWA_ENCRYPTION_KEY')
         
@@ -131,11 +131,10 @@ class EsewaCredentials(models.Model):
             key = getattr(settings, 'ESEWA_ENCRYPTION_KEY', None)
             
         if not key:
-            # Generate a new key
-            key = Fernet.generate_key()
-            # Store in environment variable for this session
-            os.environ['ESEWA_ENCRYPTION_KEY'] = key.decode()
-            print(f"Generated new encryption key: {key[:20]}...")
+            # For development, use a consistent test key
+            # In production, this should be set in environment variables
+            key = "xClBx4WsWbPJc2a_0OaA_8gBmEnhH1qRStUvWxYz1234567890="
+            print(f"Using default test encryption key: {key[:20]}...")
         elif isinstance(key, str):
             # Convert string key to bytes if needed
             key = key.encode()

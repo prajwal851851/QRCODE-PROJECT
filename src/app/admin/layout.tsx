@@ -13,6 +13,7 @@ import { fetchWithAuth, logout, getApiUrl } from '@/lib/api-service'
 import { Sun, Moon, User, LogOut, Settings, KeyRound } from 'lucide-react'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import { useLoading } from '@/contexts/LoadingContext'
+import { useRequireSubscription } from "@/hooks/useRequireSubscription";
 
 function decodeJWT(token: string) {
   if (!token) return null
@@ -29,6 +30,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
+  useRequireSubscription();
   const [showDropdown, setShowDropdown] = useState(false)
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [profileName, setProfileName] = useState('')
@@ -52,8 +54,18 @@ export default function AdminLayout({
       const token = localStorage.getItem('adminAccessToken');
       const path = window.location.pathname
 
-      if (!adminSession && path !== '/admin/login' && path !== '/admin/forgot-password' && path !== '/admin/signup' && path !== '/admin/verify-otp') {
-        router.push('/admin/login')
+      // Skip authentication check for certain pages
+      const skipAuthCheck = [
+        '/admin/login',
+        '/admin/signup', 
+        '/admin/forgot-password',
+        '/admin/verify-otp',
+        '/admin/subscribe',
+        '/'
+      ];
+
+      if (!adminSession && !skipAuthCheck.includes(path)) {
+        router.push('/admin/login?redirect=' + encodeURIComponent(path))
       } else if (token) {
         const payload = decodeJWT(token)
         if (payload && payload.user_id) {

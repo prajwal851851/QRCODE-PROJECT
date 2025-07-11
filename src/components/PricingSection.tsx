@@ -2,36 +2,228 @@
 
 import { PricingCard } from "./PricingCard"
 import { useRouter } from "next/navigation"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
+import { useEffect, useState } from "react"
 
 export function PricingSection() {
   const router = useRouter()
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(true)
 
-  const handleStartTrial = () => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token')
-    if (!token) {
-      toast.error("Please login first to start your free trial")
-      router.push('/admin/login')
-      return
-    }
-    
-    // Start free trial logic
-    toast.success("Starting your 3-day free trial!")
-    router.push('/admin/dashboard')
+  // Helper to get the correct token
+  function getToken() {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('adminAccessToken') || localStorage.getItem('employeeAccessToken');
   }
 
-  const handleSubscribe = () => {
+  // Check if user already has active subscription
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      const token = getToken();
+      if (!token) {
+        setIsCheckingSubscription(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://qrcode-project-3.onrender.com"}/api/billing/subscription/access/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.has_access) {
+            // User already has active subscription - redirect to dashboard
+            toast.success("You already have an active subscription!");
+            router.push('/admin/dashboard');
+            return;
+          } else {
+            // Check if payment is pending
+            if (data.subscription_status === 'pending_payment') {
+              toast.info(data.message || "Payment is being processed. Please wait for confirmation.");
+              return;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking subscription status:', error);
+      } finally {
+        setIsCheckingSubscription(false);
+      }
+    };
+
+    checkSubscriptionStatus();
+  }, [router]);
+
+  const handleStartTrial = async () => {
     // Check if user is logged in
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminAccessToken') || localStorage.getItem('employeeAccessToken')
     if (!token) {
-      toast.error("Please login first to subscribe")
-      router.push('/admin/login')
+      toast.error("Please login first to start your free trial")
+      router.push('/admin/login?redirect=' + encodeURIComponent('/admin/subscribe'))
+      return
+    }
+
+    // Check if user is an employee
+    const userData = JSON.parse(localStorage.getItem('adminUserData') || localStorage.getItem('employeeUserData') || '{}');
+    if (userData.is_employee) {
+      toast.error("Employees cannot activate free trials. Please contact your admin.")
       return
     }
     
-    // Redirect to subscription page
-    router.push('/admin/subscribe')
+    try {
+      // Create subscription (free trial)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://qrcode-project-3.onrender.com"}/api/billing/subscription/create/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({})
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        toast.success(data.message || "Free trial activated! Redirecting to dashboard...")
+        setTimeout(() => router.push('/admin/dashboard'), 1500)
+      } else {
+        // Handle specific error cases
+        switch (data.error) {
+          case 'subscription_already_active':
+            toast.error(data.message || "You already have an active subscription")
+            setTimeout(() => router.push('/admin/dashboard'), 2000)
+            break
+          case 'trial_already_active':
+            toast.error(data.message || "You already have an active free trial")
+            break
+          case 'trial_expired':
+            toast.error(data.message || "Free trial period completed")
+            // Redirect to subscription page to show monthly options
+            setTimeout(() => router.push('/admin/subscribe'), 2000)
+            break
+          case 'subscription_expired':
+            toast.error(data.message || "Your subscription has expired")
+            break
+          default:
+            toast.error(data.message || data.error || "Could not start free trial")
+        }
+      }
+    } catch (error) {
+      console.error('Free trial error:', error)
+      toast.error("Something went wrong. Please try again.")
+    }
+  }
+
+  const handleSubscribe = async () => {
+    // Check if user is logged in
+    const token = localStorage.getItem('adminAccessToken') || localStorage.getItem('employeeAccessToken')
+    if (!token) {
+      toast.error("Please login first to subscribe")
+      router.push('/admin/login?redirect=' + encodeURIComponent('/admin/subscribe'))
+      return
+    }
+
+    // Check if user is an employee
+    const userData = JSON.parse(localStorage.getItem('adminUserData') || localStorage.getItem('employeeUserData') || '{}');
+    if (userData.is_employee) {
+      toast.error("Employees cannot activate subscriptions. Please contact your admin.")
+      return
+    }
+    
+    try {
+      // Initiate payment for subscription
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://qrcode-project-3.onrender.com"}/api/billing/payment/initiate/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          payment_type: 'subscription',
+          amount: 999,
+          currency: 'NPR',
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        console.log('Payment response:', data);
+        
+        // Check if we have the required data for eSewa payment
+        if (data.esewa_url) {
+          // Create form and submit to eSewa
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = data.esewa_url;
+
+          // Handle both payment_data object and direct payment fields
+          const paymentFields = data.payment_data || data;
+          
+          Object.entries(paymentFields).forEach(([key, value]) => {
+            // Skip non-payment fields
+            if (['message', 'payment_id', 'reference_id', 'esewa_url', 'transaction_id'].includes(key)) {
+              return;
+            }
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value as string;
+            form.appendChild(input);
+          });
+
+          console.log('Submitting form to eSewa:', data.esewa_url);
+          document.body.appendChild(form);
+          form.submit();
+          document.body.removeChild(form);
+        } else {
+          console.error('Missing eSewa URL in response:', data);
+          toast.error("Payment initialization failed - missing payment URL")
+        }
+      } else {
+        // Handle specific error cases
+        switch (data.error) {
+          case 'subscription_already_active':
+            toast.error(data.message || "You already have an active subscription")
+            setTimeout(() => router.push('/admin/dashboard'), 2000)
+            break
+          case 'trial_still_active':
+            toast.error(data.message || "Your free trial is still active")
+            break
+          case 'no_subscription':
+            toast.error(data.message || "Please activate free trial first")
+            break
+          case 'esewa_not_configured':
+          case 'esewa_not_enabled':
+            toast.error(data.message || "Payment system not configured")
+            break
+          default:
+            toast.error(data.message || data.error || "Subscription failed")
+        }
+      }
+    } catch (error) {
+      console.error('Subscription error:', error)
+      toast.error("Something went wrong. Please try again.")
+    }
+  }
+
+  // Show loading while checking subscription status
+  if (isCheckingSubscription) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+            <p className="text-lg font-semibold text-gray-900">Checking subscription status...</p>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   const freeTrialFeatures = [

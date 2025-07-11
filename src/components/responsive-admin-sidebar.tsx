@@ -21,6 +21,7 @@ import {
   X,
   Package,
   Shield,
+  Receipt,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -101,6 +102,13 @@ export function ResponsiveAdminSidebar({ children }: SidebarProps) {
       href: "/admin/payments",
       active: pathname === "/admin/payments",
       permissions: ["payments_view", "payments_manage"],
+    },
+    {
+      label: "Billing",
+      icon: Receipt,
+      href: "/admin/billing",
+      active: pathname === "/admin/billing",
+      permissions: ["admin_only"], // Only admins and super admins can access billing
     },
     {
       label: "Discounts",

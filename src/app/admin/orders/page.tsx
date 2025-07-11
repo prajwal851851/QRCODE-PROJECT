@@ -34,6 +34,7 @@ import styles from './orders.module.css'
 import { ToastAction } from "@/components/ui/toast"
 import { useLoading } from '@/contexts/LoadingContext'
 import { getApiUrl } from '@/lib/api-service'
+import { useRequireSubscription } from '@/hooks/useRequireSubscription';
 
 type OrderItem = {
   menuItemId: string;
@@ -75,6 +76,7 @@ const formatDate = (dateString: string | undefined) => {
 }
 
 export default function OrdersPage() {
+  useRequireSubscription();
   const { setShow } = useLoading();
   useEffect(() => { setShow(false); }, [setShow]);
   const [orders, setOrders] = useState<Order[]>([])

@@ -19,6 +19,7 @@ import { tables } from "@/lib/dummy-data"
 import { fetchWithAuth, getApiUrl } from '@/lib/api-service'
 import styles from '../dashboard/dashboard.module.css'
 import { useLoading } from '@/contexts/LoadingContext'
+import { useRequireSubscription } from '@/hooks/useRequireSubscription';
 
 interface Table {
   id: number
@@ -35,6 +36,7 @@ interface Table {
 const baseUrl = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_FRONTEND_URL || "https://qr-menu-code.netlify.app";
 
 export default function QRGeneratorPage() {
+  useRequireSubscription();
   const { setShow } = useLoading();
   useEffect(() => { setShow(false); }, [setShow]);
   const [tables, setTables] = useState<Table[]>([])

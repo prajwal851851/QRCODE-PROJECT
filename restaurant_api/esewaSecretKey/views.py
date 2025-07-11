@@ -465,8 +465,8 @@ def verify_otp_and_view_credentials(request):
             request.session['otp_verified_timestamp'] = timezone.now().isoformat()
             request.session['verification_token'] = verification_token
             
-        request.session.modified = True
-        request.session.save()
+            request.session.modified = True
+            request.session.save()
         except Exception as e:
             print(f"Session storage failed: {e}")
         

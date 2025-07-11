@@ -8,8 +8,10 @@ import { useLoading } from '@/contexts/LoadingContext'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
+import { useRequireSubscription } from '@/hooks/useRequireSubscription';
 
 export default function WelcomePage() {
+  useRequireSubscription();
   const { setShow } = useLoading();
   const router = useRouter();
   const { toast } = useToast();
@@ -115,6 +117,24 @@ export default function WelcomePage() {
       color: "bg-purple-100 dark:bg-purple-900/20",
       textColor: "text-purple-800 dark:text-purple-300",
     },
+    {
+      name: "Billing",
+      description: "View and manage your subscription, billing, and refund requests",
+      icon: CreditCard,
+      link: "/admin/billing",
+      permissions: ["admin"], // Only for admin/super_admin
+      color: "bg-orange-100 dark:bg-orange-900/20",
+      textColor: "text-orange-800 dark:text-orange-300",
+    },
+    {
+      name: "Integrate eSewa",
+      description: "Connect and manage your eSewa payment integration",
+      icon: BarChart3,
+      link: "/admin/integrate-esewa",
+      permissions: ["admin"], // Only for admin/super_admin
+      color: "bg-lime-100 dark:bg-lime-900/20",
+      textColor: "text-lime-800 dark:text-lime-300",
+    },
     // {
     //   name: "Settings",
     //   description: "Configure system settings and preferences",
@@ -128,9 +148,10 @@ export default function WelcomePage() {
 
   // For super_admin, show all sections. For others, filter based on permissions
   const isSuperAdmin = userData?.role === 'super_admin';
-  const userSections = isSuperAdmin
+  const isAdmin = userData?.role === 'admin' || isSuperAdmin;
+  const userSections = isAdmin
     ? accessibleSections
-    : accessibleSections.filter(section => hasAnyPermission(section.permissions))
+    : accessibleSections.filter(section => hasAnyPermission(section.permissions) && section.permissions[0] !== 'admin');
 
   return (
     <div className="space-y-6">

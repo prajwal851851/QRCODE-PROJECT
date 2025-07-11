@@ -8,9 +8,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { UtensilsCrossed, Lock, RefreshCw } from "lucide-react"
+import { UtensilsCrossed, Lock, RefreshCw, AlertCircle, CheckCircle } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProviderCustom } from "@/components/theme-provider-custom"
@@ -25,9 +25,18 @@ export default function AdminLoginPage() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [showPassword, setShowPassword] = useState(false)
   const { setShow } = useLoading()
+  const [showPaymentPending, setShowPaymentPending] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState("");
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
+
+  // Get redirect URL from query parameters
+  const redirectUrl = searchParams?.get('redirect') || '/admin/welcome'
+  const paymentPending = searchParams?.get('payment_pending') === '1';
 
   // Prefill email and password if remembered
   useState(() => {
@@ -53,6 +62,76 @@ export default function AdminLoginPage() {
       setShow(false);
     }
   }, [])
+
+  useEffect(() => {
+    // Check for manual payment pending flag or payment_pending param
+    if ((typeof window !== 'undefined' && localStorage.getItem('manualPaymentPending') === 'true') || paymentPending) {
+      // Check subscription status
+      const token = localStorage.getItem('adminAccessToken');
+      if (token) {
+        fetch(`${getApiUrl()}/api/billing/subscription/status/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'pending_payment') {
+              setShowPaymentPending(true);
+              setPendingMessage("Your payment is being verified. Access will be granted once your subscription is verified by our team within 24 Hr.");
+              router.push('/admin/subscribe/payment-pending');
+            } else {
+              setShowPaymentPending(false);
+              setPendingMessage("");
+              localStorage.removeItem('manualPaymentPending');
+              // Do NOT redirect, allow normal login
+            }
+          })
+          .catch(() => {
+            setShowPaymentPending(false);
+            setPendingMessage("");
+            localStorage.removeItem('manualPaymentPending');
+          });
+      } else {
+        setShowPaymentPending(false);
+        setPendingMessage("");
+        localStorage.removeItem('manualPaymentPending');
+      }
+    }
+    // Always check for successful payment and show confirmation if found, but only if subscription is pending_payment
+    const token = localStorage.getItem('adminAccessToken');
+    if (token) {
+      fetch(`${getApiUrl()}/api/billing/subscription/status/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'pending_payment') {
+            fetch(`${getApiUrl()}/api/billing/payment/history/`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (Array.isArray(data) && data.some((p) => p.is_successful)) {
+                  setShowPaymentSuccess(true);
+                  setSuccessMessage("Your payment was successful! Subscription will be activated soon if not already active.");
+                  router.push('/admin/subscribe/payment-pending');
+                }
+              });
+          } else {
+            setShowPaymentSuccess(false);
+            setSuccessMessage("");
+          }
+        });
+    }
+  }, [paymentPending]);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {}
@@ -129,16 +208,84 @@ export default function AdminLoginPage() {
           localStorage.removeItem("adminRememberedPassword")
         }
 
-        // Set a flag to show welcome toast on the welcome page
-        localStorage.setItem("showWelcomeToast", "true");
-        
         // Dispatch custom event to notify components about user data change
         window.dispatchEvent(new Event('userDataChanged'));
         
+        // Check subscription status and determine redirect URL
+        const determineRedirectUrl = async () => {
+          try {
+            // Check if user has active subscription
+            const subscriptionResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://qrcode-project-3.onrender.com"}/api/billing/subscription/access/`, {
+              headers: {
+                'Authorization': `Bearer ${data.access}`,
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+            });
+
+            if (subscriptionResponse.ok) {
+              const subscriptionData = await subscriptionResponse.json();
+              
+              if (subscriptionData.has_access) {
+                // User has active subscription/trial - redirect to intended page
+                if (redirectUrl === '/admin/welcome') {
+                  localStorage.setItem("showWelcomeToast", "true");
+                }
+                return redirectUrl;
+              } else {
+                // User has no active subscription
+                if (subscriptionData.user_type === 'employee') {
+                  // Employee: show error message and redirect to login
+                  toast({
+                    title: "Access Denied",
+                    description: subscriptionData.message || "Your admin's subscription has expired.",
+                    variant: "destructive",
+                  });
+                  return '/admin/login';
+                } else {
+                  // Admin: redirect to subscription page
+                  return '/admin/subscribe';
+                }
+              }
+            } else {
+              const errorData = await subscriptionResponse.json();
+              if (errorData.user_type === 'employee') {
+                // Employee: show error message and redirect to login
+                toast({
+                  title: "Access Denied",
+                  description: errorData.message || "Your admin's subscription has expired.",
+                  variant: "destructive",
+                });
+                return '/admin/login';
+              } else {
+                // Admin: redirect to subscription page as fallback
+                return '/admin/subscribe';
+              }
+            }
+          } catch (error) {
+            console.error('Error checking subscription status:', error);
+            // Error checking subscription - redirect to subscription page for admins
+            // For employees, redirect to login
+            const userData = data.user;
+            if (userData && userData.is_employee) {
+              toast({
+                title: "Access Error",
+                description: "Unable to verify access. Please contact your admin.",
+                variant: "destructive",
+              });
+              return '/admin/login';
+            } else {
+              return '/admin/subscribe';
+            }
+          }
+        };
+
+        // Determine final redirect URL and redirect
+        const finalRedirectUrl = await determineRedirectUrl();
+        
         // Small delay to ensure data is properly stored and components are updated
         setTimeout(() => {
-          // Redirect to the welcome page (spinner stays until welcome page loads)
-          router.push("/admin/welcome");
+          router.push(finalRedirectUrl);
         }, 100);
       } else {
         toast({
@@ -175,6 +322,18 @@ export default function AdminLoginPage() {
               <CardDescription className="text-center">Enter your credentials to access the admin panel</CardDescription>
             </CardHeader>
             <CardContent>
+              {showPaymentSuccess && (
+                <div className="mb-4 p-3 rounded bg-green-100 border border-green-300 text-green-900 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span>{successMessage}</span>
+                </div>
+              )}
+              {showPaymentPending && (
+                <div className="mb-4 p-3 rounded bg-yellow-100 border border-yellow-300 text-yellow-900 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-yellow-600" />
+                  <span>{pendingMessage}</span>
+                </div>
+              )}
               <form onSubmit={handleSubmit}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">

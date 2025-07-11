@@ -24,12 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production se
 
-SECRET_KEY = 'django-insecure-#=3&&9swn_=(f65qgi5ty3rmjx2&r+!1)pjkx45kix!hie%03!'
+SECRET_KEY = os.getenv("SECRET_KEY")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').strip().lower() == 'true'
 
-ALLOWED_HOSTS = ['*']
+
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '').split(',') if host.strip()]
 
 
 # Application definition
@@ -54,7 +56,7 @@ INSTALLED_APPS = [
     'EsewaIntegration',
     'InventoryManagement',
     'esewaSecretKey',
-    
+    'Billing',
 ]
 
 MIDDLEWARE = [
@@ -95,11 +97,13 @@ WSGI_APPLICATION = 'restaurant_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+# PostgreSQL configuration (for production)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'qr_menu_db',           # The name of your PostgreSQL database
-        'USER': 'postgre',           # Your PostgreSQL username
+        'USER': 'postgres',           # Your PostgreSQL username
         'PASSWORD': 'Momlove123@',   # Your PostgreSQL password
         'HOST': 'localhost',              # Or use the IP address, e.g., '127.0.0.1'
         'PORT': '5432',                   # Default PostgreSQL port
@@ -282,7 +286,11 @@ AUTHENTICATION_BACKENDS = [
 # ESEWA_PAYMENT_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"  # Legacy - removed
 # ESEWA_PRODUCT_CODE = "EPAYTEST"  # Legacy - removed  
 # ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q("  # Legacy - removed
-FRONTEND_BASE_URL = "https://qr-menu-code.netlify.app"
+# Frontend URL - Use localhost for development, production URL for production
+if DEBUG:
+    FRONTEND_BASE_URL = "http://localhost:3003"
+else:
+   FRONTEND_BASE_URL = "https://qr-menu-code.netlify.app"
 
 # eSewa Encryption Key - Will auto-generate if not set (recommended for production)
 # ESEWA_ENCRYPTION_KEY = "XRUD8vcvWWPP7x95sRaLTSiiMIesLlJ8tF-gpM02Ewg="  # Removed for production

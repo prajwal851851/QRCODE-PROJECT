@@ -16,6 +16,7 @@ import {
   Icon,
   Package,
   Shield,
+  Receipt,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -112,6 +113,12 @@ export function AdminSidebar() {
       icon: CreditCard,
       path: "/admin/payments",
       permissions: ["payments_view", "payments_manage"],
+    },
+    {
+      name: "Billing",
+      icon: Receipt,
+      path: "/admin/billing",
+      permissions: ["admin_only"], // Only admins and super admins can access billing
     },
     {
       name: "Discounts",
