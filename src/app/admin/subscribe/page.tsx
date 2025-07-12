@@ -334,6 +334,7 @@ export default function SubscribePage() {
               <li>After payment, click <b className="text-orange-600 dark:text-orange-400">"I have paid"</b> and enter your transaction details.</li>
             </ol>
             <div className="text-xs text-gray-600 dark:text-gray-400 mb-4 italic text-center">Manual verification required: Your access will be granted after we confirm your payment. This may take some time.</div>
+            <div className="text-sm text-gray-700 dark:text-gray-300 mt-2 text-center">Need help? Call/WhatsApp: <a href="tel:+9779843361311" className="text-green-600 dark:text-green-400 font-semibold">+977 9843361311</a></div>
             <Button variant="default" onClick={() => setShowManualForm(v => !v)} disabled={showManualForm} className="mb-4 w-full max-w-xs mx-auto bg-green-600 hover:bg-green-700 text-white font-semibold text-lg py-2 rounded shadow">
               <Check className="mr-2 w-5 h-5" />I have paid
             </Button>
