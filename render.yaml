@@ -24,7 +24,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        generateValue: true
+        value: ""
 
   # Next.js Frontend
   - type: web
