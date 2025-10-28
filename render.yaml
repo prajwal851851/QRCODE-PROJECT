@@ -1,0 +1,52 @@
+services:
+  # Django Backend API
+  - type: web
+    name: qrcode-project-backend
+    env: python
+    plan: free
+    buildCommand: |
+      cd restaurant_api
+      pip install -r requirements.txt
+      python manage.py migrate
+      python startup.py
+    startCommand: |
+      cd restaurant_api
+      gunicorn restaurant_api.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: restaurant_api.settings
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: "*.onrender.com"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://qrcode-project-frontend.onrender.com"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: qrcode-project-db
+          property: connectionString
+
+  # Next.js Frontend
+  - type: web
+    name: qrcode-project-frontend
+    env: node
+    plan: free
+    buildCommand: |
+      npm install
+      npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://qrcode-project-backend.onrender.com
+      - key: PORT
+        value: 3000
+
+  # PostgreSQL Database
+  - type: pserv
+    name: qrcode-project-db
+    plan: free
+    region: oregon

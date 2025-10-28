@@ -22,16 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production se
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv("SECRET_KEY", 'django-insecure-0123456789012345678901234567890123456789012345678901234567890123')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').strip().lower() == 'true'
 
-
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '').split(',') if host.strip()]
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if host.strip()]
 
 
 
@@ -63,6 +60,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # CORS should be first
+    'Billing.middleware.SubscriptionPaymentPendingMiddleware',  # Force payment pending redirect for admins
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -100,13 +98,22 @@ WSGI_APPLICATION = 'restaurant_api.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
-# PostgreSQL configuration (for production)
-
+# Database configuration
 import dj_database_url
-DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get("DATABASE_URL"))
-}
 
+# Use PostgreSQL for production (Render), SQLite for development
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(default=os.environ.get("DATABASE_URL"))
+    }
+else:
+    # Development database (SQLite)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -178,7 +185,7 @@ REST_FRAMEWORK = {
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
-    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if origin.strip()]
     CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'restaurant_api.urls'
@@ -198,6 +205,7 @@ DJOSER = {
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     'https://qr-menu-code.netlify.app',
+    'https://qrcode-project-frontend.onrender.com',
     'http://localhost:3000',
     'http://localhost:3003',
     'http://127.0.0.1:3000',
@@ -222,6 +230,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 CORS_ALLOWED_ORIGINS = [
     'https://qr-menu-code.netlify.app',
+    'https://qrcode-project-frontend.onrender.com',
     'http://localhost:3000',
     'http://localhost:3003',
     'http://127.0.0.1:3000',
@@ -286,7 +295,7 @@ AUTHENTICATION_BACKENDS = [
 if DEBUG:
     FRONTEND_BASE_URL = "http://localhost:3003"
 else:
-   FRONTEND_BASE_URL = "https://qr-menu-code.netlify.app"
+    FRONTEND_BASE_URL = os.environ.get('FRONTEND_BASE_URL', "https://qrcode-project-frontend.onrender.com")
 
 # eSewa Encryption Key - Will auto-generate if not set (recommended for production)
 # ESEWA_ENCRYPTION_KEY = "XRUD8vcvWWPP7x95sRaLTSiiMIesLlJ8tF-gpM02Ewg="  # Removed for production
