@@ -24,8 +24,9 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
+        fromService:
           name: qrcode-project-db
+          type: pserv
           property: connectionString
 
   # Next.js Frontend
