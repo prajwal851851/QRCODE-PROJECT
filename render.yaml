@@ -1,4 +1,11 @@
 services:
+  # PostgreSQL Database
+  - type: pg
+    name: qrcode-project-db
+    plan: free
+    databaseName: qrcode_db
+    user: qrcode_user
+
   # Django Backend API
   - type: web
     name: qrcode-project-backend
@@ -7,8 +14,8 @@ services:
     buildCommand: |
       cd restaurant_api
       pip install -r requirements.txt
-      python manage.py migrate --run-syncdb
-      python startup.py
+      python manage.py collectstatic --no-input
+      python manage.py migrate --no-input
     startCommand: |
       cd restaurant_api
       gunicorn restaurant_api.wsgi:application --bind 0.0.0.0:$PORT
@@ -20,11 +27,14 @@ services:
       - key: ALLOWED_HOSTS
         value: "*.onrender.com"
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://qrcode-project-frontend.onrender.com"
+        value: "https://qrcode-project-frontend.onrender.com,https://qrmenucode.netlify.app,https://qr-menu-code.netlify.app"
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        value: ""
+        fromService:
+          type: pg
+          name: qrcode-project-db
+          property: connectionString
 
   # Next.js Frontend
   - type: web

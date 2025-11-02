@@ -205,6 +205,7 @@ DJOSER = {
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     'https://qr-menu-code.netlify.app',
+    'https://qrmenucode.netlify.app',
     'https://qrcode-project-frontend.onrender.com',
     'http://localhost:3000',
     'http://localhost:3003',
@@ -215,14 +216,14 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False  # Set to False to allow JavaScript to read the cookie
 CSRF_USE_SESSIONS = False
-CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_SECURE = not DEBUG  # Set to True in production with HTTPS
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 
 # Session settings
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SECURE = not DEBUG  # Set to True in production with HTTPS
 SESSION_COOKIE_AGE = 3600  # 1 hour
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True
@@ -230,6 +231,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 CORS_ALLOWED_ORIGINS = [
     'https://qr-menu-code.netlify.app',
+    'https://qrmenucode.netlify.app',
     'https://qrcode-project-frontend.onrender.com',
     'http://localhost:3000',
     'http://localhost:3003',
@@ -262,7 +264,7 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
     "AUTH_COOKIE": "access_token",
-    "AUTH_COOKIE_SECURE": False,
+    "AUTH_COOKIE_SECURE": not DEBUG,  # Set to True in production with HTTPS
     "AUTH_COOKIE_HTTP_ONLY": True,
     "AUTH_COOKIE_SAMESITE": "Lax",
     'AUTH_COOKIE_PATH': '/',
