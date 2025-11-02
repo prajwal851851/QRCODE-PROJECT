@@ -18,7 +18,7 @@ services:
       python manage.py migrate --no-input
     startCommand: |
       cd restaurant_api
-      gunicorn restaurant_api.wsgi:application --bind 0.0.0.0:$PORT
+      gunicorn restaurant_api.wsgi:application --bind 0.0.0.0:$PORT --timeout 120 --workers 2
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: restaurant_api.settings

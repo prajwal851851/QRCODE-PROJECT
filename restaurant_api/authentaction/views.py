@@ -61,8 +61,12 @@ class SignupView(APIView):
                 purpose='signup'
             )
             
-            # Send OTP email
-            send_otp_email(user.email, otp_code, 'signup')
+            # Send OTP email asynchronously to prevent blocking
+            from .signals import send_otp_email_async
+            import threading
+            email_thread = threading.Thread(target=send_otp_email_async, args=(user.email, otp_code, 'signup'))
+            email_thread.daemon = True
+            email_thread.start()
             
             # Log signup event
             UserEvent.objects.create(
@@ -296,7 +300,12 @@ class ForgotPasswordView(APIView):
             user = CustomUser.objects.get(email=email)
             otp_code = str(random.randint(100000, 999999))
             otp = OTP.objects.create(user=user, code=otp_code, expires_at=timezone.now() + timedelta(minutes=10), purpose='forgot')
-            send_otp_email(user.email, otp_code, 'forgot')
+            # Send OTP email asynchronously to prevent blocking
+            from .signals import send_otp_email_async
+            import threading
+            email_thread = threading.Thread(target=send_otp_email_async, args=(user.email, otp_code, 'forgot'))
+            email_thread.daemon = True
+            email_thread.start()
             return Response({'message': 'OTP sent to email.'})
         except CustomUser.DoesNotExist:
             return Response({'error': 'User not found.'}, status=404)

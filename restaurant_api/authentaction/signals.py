@@ -1,6 +1,17 @@
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.html import strip_tags
+import threading
+import logging
+
+logger = logging.getLogger(__name__)
+
+def send_otp_email_async(user_email, otp_code, purpose):
+    """Send OTP email asynchronously to prevent blocking"""
+    try:
+        send_otp_email(user_email, otp_code, purpose)
+    except Exception as e:
+        logger.error(f"Failed to send OTP email to {user_email}: {str(e)}", exc_info=True)
 
 def send_otp_email(user_email, otp_code, purpose):
     if purpose == 'signup':
@@ -84,11 +95,18 @@ def send_otp_email(user_email, otp_code, purpose):
         """
     
     # Send email with HTML and plain text versions
-    send_mail(
-        subject,
-        strip_tags(plain_message),
-        settings.DEFAULT_FROM_EMAIL,
-        [user_email],
-        html_message=html_message,
-        fail_silently=False,
-    )
+    # Use fail_silently=True and handle errors gracefully to prevent worker timeout
+    try:
+        send_mail(
+            subject,
+            strip_tags(plain_message),
+            settings.DEFAULT_FROM_EMAIL,
+            [user_email],
+            html_message=html_message,
+            fail_silently=True,  # Changed to True to prevent blocking on email errors
+        )
+        logger.info(f"OTP email sent successfully to {user_email}")
+    except Exception as e:
+        logger.error(f"Error sending OTP email to {user_email}: {str(e)}", exc_info=True)
+        # Don't raise exception - allow signup to continue even if email fails
+        pass

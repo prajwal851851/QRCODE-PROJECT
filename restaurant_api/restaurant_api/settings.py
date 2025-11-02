@@ -322,6 +322,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'qrmenu851@gmail.com'  # <-- Replace with your Gmail address
 EMAIL_HOST_PASSWORD = 'afgo tamy ruel szje'   # <-- Use an App Password if 2FA is enabled
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# Email timeout settings to prevent blocking
+EMAIL_TIMEOUT = 5  # 5 second timeout for SMTP operations
 
 # If you use 2-Step Verification (2FA) on your Google account, you MUST use an App Password:
 # https://support.google.com/accounts/answer/185833?hl=en
