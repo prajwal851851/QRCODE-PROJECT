@@ -37,6 +37,12 @@ services:
           property: connectionString
       - key: PGSSLMODE
         value: prefer
+      - key: EMAIL_HOST_USER
+        value: qrmenu851@gmail.com
+      - key: EMAIL_HOST_PASSWORD
+        value: eeyxeqdnczjlgcwr
+      - key: EMAIL_TIMEOUT
+        value: "10"
 
   # Next.js Frontend
   - type: web

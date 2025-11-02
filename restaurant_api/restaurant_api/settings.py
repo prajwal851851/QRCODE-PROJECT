@@ -315,18 +315,34 @@ SIMPLE_JWT = {
 }
 
 # Gmail SMTP email backend for production
+# Use environment variables for security, fallback to hardcoded values for backward compatibility
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'qrmenu851@gmail.com'  # <-- Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'afgo tamy ruel szje'   # <-- Use an App Password if 2FA is enabled
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'qrmenu851@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'eeyxeqdnczjlgcwr')  # Gmail App Password (no spaces)
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Email timeout settings to prevent blocking
-EMAIL_TIMEOUT = 5  # 5 second timeout for SMTP operations
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))  # Increased to 10 seconds
 
-# If you use 2-Step Verification (2FA) on your Google account, you MUST use an App Password:
-# https://support.google.com/accounts/answer/185833?hl=en
+# Gmail OAuth2 alternative (if App Passwords stop working)
+# If you need to use OAuth2, uncomment and configure:
+# EMAIL_BACKEND = 'django_ses.SESBackend'  # For AWS SES
+# Or use sendgrid, mailgun, etc.
+
+# IMPORTANT: Gmail Setup Instructions
+# 1. Enable 2-Step Verification: https://myaccount.google.com/security
+# 2. Generate App Password: https://myaccount.google.com/apppasswords
+#    - Select "Mail" and "Other (Custom name)" -> "Django App"
+#    - Copy the 16-character password (no spaces)
+# 3. If App Passwords don't work, you may need to:
+#    - Enable "Less secure app access" (deprecated, but sometimes still needed)
+#    - Or switch to OAuth2 authentication
+# 4. If emails still fail, check:
+#    - Gmail account is not locked/suspended
+#    - App Password hasn't expired
+#    - Firewall/network allows SMTP connections
 
 
 # Partial settings.py
