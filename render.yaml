@@ -36,7 +36,7 @@ services:
           name: qrcode-project-db
           property: connectionString
       - key: PGSSLMODE
-        value: require
+        value: prefer
 
   # Next.js Frontend
   - type: web
