@@ -33,6 +33,16 @@ def run_startup_commands():
         
         # Only run these commands if database is accessible
         try:
+            # Create admin user (only if doesn't exist or needs reset)
+            print("Ensuring admin user exists...")
+            try:
+                exec(open('create_admin.py').read())
+                print("Admin user setup completed")
+            except FileNotFoundError:
+                print("create_admin.py not found, skipping admin setup")
+            except Exception as admin_error:
+                print(f"Admin setup error (non-critical): {admin_error}")
+            
             # Create permissions
             print("Creating permissions...")
             execute_from_command_line(['manage.py', 'create_permissions'])

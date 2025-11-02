@@ -9,9 +9,15 @@ logger = logging.getLogger(__name__)
 def send_otp_email_async(user_email, otp_code, purpose):
     """Send OTP email asynchronously to prevent blocking"""
     try:
-        send_otp_email(user_email, otp_code, purpose)
+        result = send_otp_email(user_email, otp_code, purpose)
+        if result:
+            logger.info(f"OTP email sent successfully to {user_email} for {purpose}")
+        else:
+            logger.warning(f"OTP email sending returned False for {user_email} - check email configuration")
     except Exception as e:
         logger.error(f"Failed to send OTP email to {user_email}: {str(e)}", exc_info=True)
+        # Print to console for immediate visibility in logs
+        print(f"ERROR: Failed to send OTP email to {user_email}: {str(e)}")
 
 def send_otp_email(user_email, otp_code, purpose):
     if purpose == 'signup':
@@ -95,18 +101,39 @@ def send_otp_email(user_email, otp_code, purpose):
         """
     
     # Send email with HTML and plain text versions
-    # Use fail_silently=True and handle errors gracefully to prevent worker timeout
+    # Set fail_silently=False temporarily to catch errors, but catch exceptions
     try:
-        send_mail(
+        result = send_mail(
             subject,
             strip_tags(plain_message),
             settings.DEFAULT_FROM_EMAIL,
             [user_email],
             html_message=html_message,
-            fail_silently=True,  # Changed to True to prevent blocking on email errors
+            fail_silently=False,  # Set to False to see actual errors
         )
-        logger.info(f"OTP email sent successfully to {user_email}")
+        if result:
+            logger.info(f"OTP email sent successfully to {user_email} for {purpose}")
+            print(f"SUCCESS: OTP email sent to {user_email}")
+            return True
+        else:
+            logger.warning(f"send_mail returned False for {user_email}")
+            print(f"WARNING: send_mail returned False for {user_email}")
+            return False
     except Exception as e:
-        logger.error(f"Error sending OTP email to {user_email}: {str(e)}", exc_info=True)
+        error_msg = str(e)
+        logger.error(f"Error sending OTP email to {user_email}: {error_msg}", exc_info=True)
+        # Print to console for immediate visibility
+        print(f"ERROR: Failed to send OTP email to {user_email}: {error_msg}")
+        print(f"ERROR Type: {type(e).__name__}")
+        
+        # Provide helpful error messages
+        if "authentication failed" in error_msg.lower() or "invalid credentials" in error_msg.lower():
+            print("ERROR: Gmail authentication failed. Please check:")
+            print("  1. App Password is correct and not expired")
+            print("  2. 2-Step Verification is enabled")
+            print("  3. App Password is valid for the account")
+        elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
+            print("ERROR: Email connection issue. Check network/firewall settings.")
+        
         # Don't raise exception - allow signup to continue even if email fails
-        pass
+        return False
