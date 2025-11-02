@@ -100,11 +100,33 @@ WSGI_APPLICATION = 'restaurant_api.wsgi.application'
 
 # Database configuration
 import dj_database_url
+from urllib.parse import urlparse, urlencode, parse_qs
 
 # Use PostgreSQL for production (Render), SQLite for development
 if os.environ.get('DATABASE_URL'):
+    # Get the database URL
+    db_url = os.environ.get("DATABASE_URL")
+    
+    # For Render PostgreSQL, ensure SSL mode is set in the connection string
+    # This is required because Render PostgreSQL requires SSL connections
+    if 'onrender.com' in db_url and 'sslmode' not in db_url:
+        # Parse the URL and add sslmode parameter
+        parsed = urlparse(db_url)
+        query_params = parse_qs(parsed.query)
+        query_params['sslmode'] = ['require']
+        # Reconstruct the URL with sslmode
+        new_query = urlencode(query_params, doseq=True)
+        db_url = parsed._replace(query=new_query).geturl()
+    
+    # Parse database URL with SSL configuration
+    db_config = dj_database_url.config(
+        default=db_url,
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+    
     DATABASES = {
-        'default': dj_database_url.config(default=os.environ.get("DATABASE_URL"))
+        'default': db_config
     }
 else:
     # Development database (SQLite)
